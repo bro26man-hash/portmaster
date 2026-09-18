@@ -1,182 +1,159 @@
 # 🎙️ Podcast Research Notes: Digital Rights & Surveillance Technology
 
-> **Primary Project:** [safing/portmaster](https://github.com/safing/portmaster) — "Love Freedom — Block Mass Surveillance"
-> - 13,739 stars | Go | GPL-3.0 | Application firewall for privacy
-> - Forked to: `bro26man-hash/portmaster`
->
-> **Secondary Project:** [Shawn-Shan/fawkes](https://github.com/Shawn-Shan/fawkes) — Privacy preservation against facial recognition
-> - 5,607 stars | Python | BSD-3-Clause | Academic research project (SANDLab, Univ. of Chicago)
+**Project:** Portmaster — `safing/portmaster` (forked to `bro26man-hash/portmaster`)
+**License:** GPL-3.0 | **Language:** Go | **Stars:** 13,739 | **Forks:** 578
+**Topics:** `application-firewall`, `dns`, `firewall`, `privacy-by-design`, `privacy-enhancing-technologies`, `privacy-protection`, `privacy-tools`
 
 ---
 
-## 1. Executive Summary
+## 1. Project Overview
 
-This document synthesizes research from two of the most notable open-source projects in the surveillance/privacy-tech space, along with community discussions touching on ethics, civil liberties, and the fundamental tensions in building and using counter-surveillance tools. It is intended as a starting point for podcast episode planning.
+**Portmaster** is a free and open-source application firewall that intercepts all network traffic at the raw packet level to give users control over their computer's networking. Its tagline — *"Love Freedom — ❌ Block Mass Surveillance"* — makes its political orientation explicit.
 
----
+### How It Works
+- **Linux:** Integrates via `nfqueue` in the kernel network stack; uses eBPF and `/proc` for connection ownership.
+- **Windows:** Uses a kernel driver (WFP — Windows Filtering Platform) + IP Helper API (`iphlpapi.dll`) for per-app ownership.
+- **DNS:** Intercepts "astray" DNS queries and reroutes them to itself, resolving via DoT/DoH resolvers. Supports split-horizon and horizon validation against rebinding attacks.
+- **Per-App Control:** Every connection can be monitored and blocked per application, including tricky processes (Snap, AppImage, Windows Store apps, `svchost.exe`).
+- **Filter Lists:** Automatic blocking of malware, ad, and tracker domains via regularly updated lists.
+- **SPN (Safing Privacy Network):** A proprietary privacy network (onion routing over multiple hops, positioned between VPN and Tor). Exit nodes are chosen near destination servers for geo-unblocking. Community-hosted nodes available.
 
-## 2. Project Profiles
+### Key Tension Built Into the Project
+> "Everything is 100% local on your device. (except the SPN, naturally)"
 
-### 2a. Portmaster (safing/portmaster)
+This parenthetical is a window into the project's own acknowledgment that its privacy network introduces a *trusted intermediary* — the company Safing itself hosts some nodes. This is a design choice that deserves podcast scrutiny.
 
-**What it is:** A free, open-source application firewall for Windows and Linux that intercepts every network packet at the raw level (via `nfqueue` on Linux, WFP kernel driver on Windows). It gives users granular, per-app control over network activity — blocking trackers, malware, and any connection the user chooses.
-
-**Key features relevant to the podcast:**
-- **Per-app firewalling:** Every process on the computer can be monitored and controlled.
-- **Secure DNS (DoT/DoH):** Prevents ISP-level DNS surveillance.
-- **SPN (Safing Privacy Network):** A paid, centralized "privacy network" that uses onion routing (like Tor) but with exit nodes near destinations for geo-unblocking.
-- **Network history & bandwidth monitoring:** Local-only recording of all connections.
-- **GPL-3.0 license:** The core software is fully open-source and copylefted.
-
-**What makes it newsworthy:**
-- Explicitly branded as an anti-surveillance tool ("❌ Block Mass Surveillance").
-- Developed in the EU (Austria), subject to GDPR and European digital rights frameworks.
-- 13,739 GitHub stars, 578 forks — significant community adoption.
-- The SPN introduces a **commercial, centralized layer** to an otherwise decentralized/open-source tool — a tension worth exploring.
-
-### 2b. Fawkes (Shawn-Shan/fawkes)
-
-**What it is:** A privacy protection system developed by SANDLab at the University of Chicago that applies subtle, invisible perturbations to facial images, making them unrecognizable to facial recognition models while still appearing normal to human eyes. Published at *USENIX Security 2020*.
-
-**Key features relevant to the podcast:**
-- **Data poisoning approach:** Fawkes doesn't encrypt or hide — it *changes* your face data just enough to confuse ML models.
-- **Three perturbation modes:** Low, mid, high — trading off between image quality and protection strength.
-- **Academic paper:** [Fawkes: Protecting Personal Privacy against Unauthorized Deep Learning Models](https://www.shawnshan.com/files/publication/fawkes.pdf)
-
-**What makes it newsworthy:**
-- Represents the "counter-surveillance" end of the spectrum — not just hiding from surveillance, but actively *poisoning* the surveillance models.
-- Research-grade tool with real academic rigor, but community usage has revealed fundamental limitations.
+### Media Appearances
+Featured on **Heise Online**, **ghacks.net**, **Techlore** (YouTube), and **Lifehacker**.
 
 ---
 
-## 3. Societal Concerns & Ethical Tensions
+## 2. Societal Concerns & Ethical Tensions
 
-### 3a. The Effectiveness Paradox
+### 2A. Court-Ordered Censorship & Internet Blocking
+**Source:** [Issue #1366 — "Download blocked by Hamburg Regional Court"](https://github.com/safing/portmaster/issues/1366)
 
-**Core tension:** Counter-surveillance tools can only work if the surveillance systems they target are imperfect. Once those systems adapt, the tools become obsolete — and users may develop a false sense of security.
+A user discovered that the **Hamburg Regional Court** had blocked access to `yt-dl.org` (the download site for the popular YouTube downloader `yt-dl`). Even using Portmaster with multiple DNS providers and VPNs, the block could not be bypassed — suggesting ISP-level or network-level enforcement that no endpoint tool can circumvent.
 
-**Evidence from Fawkes community issues:**
-- **Issue #138** ("No effect on AWS Rekognition?"): A user tested Fawkes-cloaked images against AWS Rekognition and found 100% similarity matching. Even at `--mode=high`, the perturbations were visible and AWS still identified the same person.
-- **Issue #138 comment by tbeckenhauer:** Tested two different cloaked images of the same person against facial recognition — got 99.9%, 99.5%, and 99.3% similarity for low/mid/high modes. Concluded: *"I imagine these facial recognition tools saw all the publicity for Fawkes and started training their networks to recognize cloaked images."
-- **Issue #138 comment by ghost (Oct 2023):** Linked to a [Register article](https://www.theregister.com/2022/03/15/research_finds_data_poisoning_cant/) concluding that **large players have already trained their models to resist data poisoning** — essentially declaring Fawkes effectively defeated at scale.
-- **Issue #192** ("Does this still work today?"): A user asked whether Fawkes still works against modern models — no one has confirmed it still does.
+**Podcast Angles:**
+- **When did Europe become China?** German courts can order blocks on software distribution sites. Is this the normalisation of internet censorship in the name of copyright enforcement?
+- **The illusion of control:** Portmaster intercepts every packet — but it can't bypass a court-ordered block at the ISP level. This reveals a fundamental power asymmetry: individual tools can protect you from corporate surveillance, but not from state-directed censorship.
+- **Chilling effects:** If a court can block a YouTube downloader site, what's to stop them from blocking privacy tools themselves? The project *is* the target of surveillance-blocking — could it one day be blocked *for* doing that?
+- **Geopolitical asymmetry:** A German court's ruling is globally enforceable on German ISPs, but the tool is developed in Austria and used worldwide. Who governs the internet when courts, corporations, and open-source communities operate in different jurisdictions?
 
-**Podcast angle:** *"The cat-and-mouse game between privacy tools and surveillance AI is asymmetric. Companies have near-infinite data and compute; individual users have a checkbox and a thesis. What does 'winning' even look like?"
+### 2B. The Microsoft Webview Controversy — Privacy Tool Dependence on Surveillance Infrastructure
+**Sources:** [Issue #2031 — "Love Freedom, hate Webview"](https://github.com/safing/portmaster/issues/2031) | [Issue #1932 — "Portmaster V2 forces microsoft webview installation"](https://github.com/safing/portmaster/issues/1932)
 
-### 3b. The Centralization Tension
+Portmaster V2 migrated from Electron to the **Tauri framework**, which uses the native OS WebView. On Windows, that means **Microsoft's Edge WebView2** — a component that privacy-conscious users often explicitly remove from their systems.
 
-**Core tension:** Tools that claim to protect individual privacy can simultaneously introduce new centralized points of control.
+**The Conflict:**
+- **Users' perspective:** "A privacy tool that forces you to install Microsoft's WebView2 is like a security company that sells you a lock but requires you to give Microsoft a copy of your keys." One user quit ProtonVPN over the same issue.
+- **Maintainers' perspective:** WebView2 is an OS-level component, pre-installed on Windows 11. It's not Microsoft "spying" through it — it's a rendering engine. They argue that if you're serious about escaping Microsoft, you should switch to Linux.
+- **Community division:** Some power users argued Portmaster can still block WebView2's tracking connections using filter lists. Others said the *principle* matters more than the practical workaround.
 
-**Evidence from Portmaster:**
-- **SPN (Safing Privacy Network):** While Portmaster's core is GPL-3.0 and fully local, the SPN is a **paid, proprietary, centralized service** run by the same company that built the firewall. Users route traffic through Safing-operated nodes.
-- The SPN whitepaper describes onion encryption over multiple hops (Tor-like), but **exit nodes are chosen near destination servers** — a design choice that prioritizes speed and geo-unblocking over maximum anonymity.
-- **Community concern:** The open-source community (13,739 stars, 578 forks) has at times debated whether a commercial privacy service built on top of an open-source anti-surveillance tool creates a trust problem. What data does Safing collect about SPN users? Can they be compelled to disclose it?
+**Podcast Angles:**
+- **The impossibility of "pure" privacy on surveillance OS:** Using Windows means accepting Microsoft's telemetry infrastructure. Can a privacy tool *stay* on Windows and remain trustworthy? Or is the platform itself the surveillance problem?
+- **The Tauri trade-off:** Tauri reduces installer size (no bundled Electron browser). But it outsources rendering to the OS — which on Windows means Microsoft. Is this a sustainable compromise, or a slippery slope?
+- **"Offline installer" irony:** The V2 installer was supposed to be offline, yet it requires downloading WebView2 from Microsoft during installation. Users called this "ironic, and sloppy." When a privacy tool's "offline" mode depends on contacting the surveillance giant, what does "offline" even mean anymore?
+- **Dependency as vulnerability:** If Microsoft can push updates to WebView2 that break Portmaster, the privacy tool's security depends on a corporation's update cycle. Who controls *your* security when the dependencies are controlled by someone else?
+- **The "just switch to Linux" deflection:** The maintainers' suggestion that privacy-conscious users should abandon Windows entirely is a class privilege argument. Not everyone can or wants to run Linux. Does the open-source community have an obligation to make tools accessible on all platforms, even surveillance-heavy ones?
 
-**Podcast angle:** *"Can a company that sells you privacy be trusted with your privacy? The Portmaster SPN asks us to reconsider what 'open-source privacy' means when the most convenient option is a paid, closed service."
+### 2C. The Trust Model Problem — Who Watches the Watchmen?
+**Source:** SPN (Safing Privacy Network) architecture
 
-### 3c. The False Security Problem
+SPN uses onion routing like Tor, but:
+- **Nodes are hosted by Safing (the company) and the community.** Safing operates some exit nodes.
+- **SPN is a paid feature.** Free users get the firewall; privacy network access costs money.
+- **The whitepaper** is available but the network is proprietary — not independently auditable like Tor.
 
-**Core tension:** Privacy tools may give users a false sense of protection, leading them to behave more recklessly online.
+**Podcast Angles:**
+- **Proprietary privacy:** Tor is open and auditable. SPN is a commercial product. When a privacy tool becomes a business, whose interests does it serve?
+- **Exit node trust:** Who runs the exit nodes? If Safing operates one, they could theoretically observe traffic (even if encrypted in transit). This is the same debate as "can you trust your VPN?"
+- **Freemium surveillance:** The free version blocks trackers; the paid version routes your traffic through a proprietary network. Is this democratizing privacy or creating a two-tier system where the wealthy get better anonymization?
 
-**Evidence:**
-- Fawkes' own developer (Shawn Shan) acknowledged in **Issue #95** that all cloaked images of the same person are still recognized as the same person by facial recognition systems: *"It would be great to make all images to appear as different person. But it is a much harder task and we can't support that currently."
-- This means a Fawkes user might believe their face is fully protected, when in reality it's only protected against *some* models under *specific* conditions.
-- Portmaster's "great defaults" philosophy (as stated in its README) — *"With great defaults your privacy improves without any effort"* — could similarly lull users into believing they're fully protected when they're only partially shielded.
+### 2D. The Meta-Surveillance Paradox
+**Source:** Portmaster's own architecture
 
-**Podcast angle:** *"Is the privacy app on your phone a shield or a comfort blanket? The psychology of 'feeling safe' versus 'being safe' in the digital age."
+Portmaster intercepts *every packet* on your computer. To block surveillance, it must *see* all surveillance. This means:
+- It maintains a local database of network connections (Network History feature, paid).
+- It logs per-app bandwidth usage.
+- It processes DNS queries centrally.
 
-### 3d. The Arms Race Asymmetry
-
-**Core tension:** Surveillance technology is funded by nation-states and corporations; counter-surveillance tools are typically built by academics and volunteers.
-
-**Evidence:**
-- Fawkes is a university research project (SANDLab, University of Chicago) with academic funding. Its maintenance has lagged — Issue #192 (April 2026) asks if it "still works today" with no authoritative answer from the team.
-- Portmaster is built by a small Austrian company (Safing). While it has persisted and evolved, its SPN commercial model raises questions about sustainability vs. mission drift.
-- Surveillance systems (facial recognition, mass DNS monitoring, social media scraping) are deployed by entities with vastly more resources.
-
-**Podcast angle:** *"David vs. Goliath, but Goliath has a budget 1,000x bigger. What does it mean for the future of digital rights when privacy is technologically outmatched but culturally ahead?"
-
-### 3e. The "Who Watches the Watchmen" Problem
-
-**Core tension:** Any tool that can block surveillance can also be used to enhance surveillance. The same network-interception technology that protects you can be repurposed.
-
-**Evidence:**
-- Portmaster uses `nfqueue` (Linux) and WFP (Windows) — kernel-level packet interception. This is the same class of technology used by:
-  - Corporate DLP (Data Loss Prevention) systems
-  - Government deep packet inspection (DPI)
-  - Censorship firewalls (e.g., Great Firewall of China)
-- The open-source nature of Portmaster (GPL-3.0) means the code is available for anyone to modify — including for surveillance purposes.
-- **No open issues directly address this**, but it's a glaring absence in the project's ethical discourse.
-
-**Podcast angle:** *"The technology that protects your privacy is the same technology that protects theirs. Who gets to decide which side it's on?"
-
-### 3f. Bias & Misidentification in Facial Recognition
-
-**Core tension:** Facial recognition systems are known to have higher error rates for people of color, women, and non-binary individuals. Counter-surveillance tools that claim to protect "everyone" may not account for these disparities.
-
-**Evidence:**
-- Fawkes' testing methodology (per Issue #67 and #125) relies on the **WebFace dataset** (10,000+ labels) — a standardized academic benchmark. But real-world deployment involves biased, unevenly trained models.
-- The developer himself cautioned against testing with celebrity images (**Issue #67**): *"Please do not use celebrity pictures for test. Because most of the facial recognition models have already trained on celebrities."
-- This implies Fawkes' effectiveness may vary significantly across different demographics — a concern that has **never been formally studied or published**.
-
-**Podcast angle:** *"If you're a Black woman, does Fawkes protect you? If facial recognition misidentifies you 35x more often, does 'protection' mean something different for you?"
+**Podcast Angles:**
+- **The panopticon you build yourself:** A tool that monitors all your network activity to protect you from being monitored is itself a monitoring tool. Who watches the watchman?
+- **Local vs. remote, but still local:** The data stays on your device — unlike corporate surveillance. But the *capability* to record, search, and analyze your every connection is the same capability that intelligence agencies argue they need. Does the intent change the nature of the tool?
+- **Future abuse potential:** If Portmaster's database of connections were subpoenaed, hacked, or accidentally exposed, it would be a goldmine. The tool that protects you could also be used against you.
 
 ---
 
-## 4. Key GitHub Discussions & Issues Reference
+## 3. Broader Themes for the Episode
 
-| Issue | Project | Topic | Podcast Relevance |
-|-------|---------|-------|-------------------|
-| [#138](https://github.com/Shawn-Shan/fawkes/issues/138) | Fawkes | Fawkes doesn't work against AWS Rekognition | ⭐⭐⭐ Central to effectiveness debate |
-| [#192](https://github.com/Shawn-Shan/fawkes/issues/192) | Fawkes | "Does this still work today?" | ⭐⭐⭐ Questions about current relevance |
-| [#95](https://github.com/Shawn-Shan/fawkes/issues/95) | Fawkes | All cloaked images show as same person | ⭐⭐⭐ Fundamental limitation |
-| [#67](https://github.com/Shawn-Shan/fawkes/issues/67) | Fawkes | Doesn't protect against Face++ | ⭐⭐ Real-world model variation |
-| [#125](https://github.com/Shawn-Shan/fawkes/issues/125) | Fawkes | AWS Rekognition high similarity | ⭐⭐ Reinforces #138 findings |
-| [#152](https://github.com/Shawn-Shan/fawkes/issues/152) | Fawkes | Non-adversarial training versions don't work | ⭐⭐ Technical gap |
-| Portmaster issues | Portmaster | Mostly technical bugs/features | ⭐ SPN commercial tension not discussed in issues |
+### 3A. The Censorship–Surveillance Nexus
+- Court-ordered blocks (Issue #1366) show that censorship and surveillance are two sides of the same coin. You can't have "metadata collection for security" without the infrastructure to also block "unwanted" content.
+- The same network infrastructure that enables mass surveillance also enables court-ordered censorship. Tools that fight one often can't fight the other.
 
-**Notable absence:** Neither project has dedicated issues or discussions tagged with "ethics," "civil liberties," or "surveillance" — suggesting these conversations happen in external spaces (academic papers, news articles, social media) rather than within the projects themselves.
+### 3B. The Platform Problem
+- You cannot build meaningful privacy on a surveillance platform (Windows, macOS). The OS itself is the surveillance instrument.
+- The "just switch to Linux" argument ignores accessibility, compatibility, and privilege.
+- This is a structural issue, not a tool-level issue. No firewall can fully compensate for a compromised platform.
 
----
+### 3C. The Open-Source Trust Problem (The Trust Question)
+- Open-source code (GPL-3.0) lets you verify what the tool does. But you can't verify what the *platform* does.
+- Proprietary privacy networks (SPN) introduce a trust dependency that contradicts open-source principles.
+- The community debate over WebView2 reveals a deeper fracture: **pragmatists vs. purists** — those who accept Microsoft dependencies as unavoidable vs. those who see any compromise as a betrayal.
 
-## 5. Suggested Podcast Episode Angles
+### 3D. The Freemium Dilemma
+- When privacy tools become businesses, they face pressure to monetize user data or create tiered access to privacy features.
+- Portmaster's SPN is a good case study: the *free* firewall protects you from corporate trackers; the *paid* network protects you from everything (including the free tier's provider?).
+- Can a privacy tool be both sustainable and trustworthy? Or does monetization inevitably create conflicts of interest?
 
-### Angle A: "The Illusion of Control"
-Explore how privacy tools create a *feeling* of agency without delivering *actual* protection. Use Fawkes' limitations and Portmaster's SPN as case studies.
-
-### Angle B: "Open Source, Closed Reality"
-Investigate the gap between what open-source privacy tools *promise* (transparency, community control) and what they *deliver* (often commercialized, centralized, or effectively defeated).
-
-### Angle C: "The Datenschutz Dilemma" (The Data Protection Dilemma)
-Focus on the EU-specific angle: Portmaster is built in Austria under GDPR. How does European regulatory culture shape what "privacy" means — and does it create a false sense of superiority?
-
-### Angle D: "Arms Race Economics"
-Compare the resource asymmetry between surveillance deployers (governments, corporations) and counter-surveillance builders (academics, FOSS communities). What funding models could level the playing field?
-
-### Angle E: "Who Is Privacy For?"
-Examine whether privacy tools are designed with the needs of privileged users (celebrities, tech-literate Westerners) in mind, and whether they fail marginalized communities who face the most surveillance.
+### 3E. Civil Liberties and the Law
+- The Hamburg court block (Issue #1366) raises questions about **due process:** Can a court order a block without the site operator being heard? Is this a violation of the right to receive and impart information?
+- **Prediction:** If courts can block software distribution sites, they can block privacy tool websites. The surveillance industry is simultaneously selling surveillance tools and trying to censor tools that resist surveillance.
 
 ---
 
-## 6. Additional Resources for Research
+## 4. Key Quotes from the Community
 
-- **Fawkes academic paper:** https://www.shawnshan.com/files/publication/fawkes.pdf
-- **Portmaster SPN Whitepaper:** https://safing.io/files/whitepaper/Gate17.pdf
-- **The Register article on data poisoning defeat:** https://www.theregister.com/2022/03/15/research_finds_data_poisoning_cant/
-- **Portmaster website:** https://safing.io
-- **Fawkes project page:** https://sandlab.cs.uchicago.edu/fawkes/
-- **PrivacyGuides (companion project):** https://github.com/privacyguides/privacyguides.org
+> *"I have removed webview from my system and never encountered any issues so far. Your advice is heard and highly questioned."* — Issue #1932
 
----
+> *"It's pathetic a privacy product FORCES its users to install any software from Microsoft."* — Issue #1932
 
-## 7. Open Questions for Guests/Interviewees
+> *"I was a ProsonVPN customer and since they updated their software to automatically download Microsoft Webview I quit their product."* — Issue #1932
 
-1. Should open-source privacy tools be required to publish formal effectiveness assessments? Should there be an independent "Privacy Tool Audit" analogous to security audits?
-2. Is it ethical for a company to monetize a privacy network (SPN) built on top of an anti-surveillance firewall? Where's the line between sustainability and mission drift?
-3. If counter-surveillance tools are effectively defeated at scale, should researchers be more transparent about this — or would that discourage adoption and make things worse?
-4. How should facial recognition regulation account for the existence of tools like Fawkes? Should using Fawkes be legally protected as a form of expression?
-5. Can "privacy by design" coexist with "surveillance by design" in the same operating system? What would a truly neutral network stack look like?
+> *"This censorship is shocking."* — Issue #1366, on the Hamburg court block
+
+> *"Since you are free and open source and love freedom and not vendor lock-in, can your app use CEF instead of webview."* — Issue #2031
+
+> *"I absolutely second this. I was shocked when I was prompted to (re-)install Microsoft Webview as a hard requirement for Portmaster. I also second the argument that an open-sourced firewall must not rely on Big Tech companies who are known to collect and sell their user's data."* — Issue #2031
 
 ---
 
-*Created for podcast research purposes. All GitHub issues referenced are publicly available at the URLs above.*
+## 5. Suggested Podcast Segment Structure
+
+| Segment | Topic | Key Question |
+|---------|-------|-------------|
+| **Cold Open** | The Hamburg Court Block | "A German court blocked a software download site — and no firewall could bypass it. What does that mean for your right to privacy tools?" |
+| **Act 1** | Portmaster & the Architecture of Surveillance | "How does a network firewall actually work? And why does watching *all* your traffic to protect you from watchers create a paradox?" |
+| **Act 2** | The WebView2 War | "A privacy tool forces you to install Microsoft's WebView. Is this a practical compromise or a betrayal of principles? And why did it make one user quit ProtonVPN?" |
+| **Act 3** | The Trust Problem | "If a privacy network's exit nodes are run by the company selling you the product, who are you really trusting? And can open-source code fix that?" |
+| **Closing** | The Bigger Picture | "Censorship and surveillance are the same infrastructure seen from different angles. The question isn't whether you have a firewall — it's whether the platform you're standing on is already surveilling you." |
+
+---
+
+## 6. Sources & Further Reading
+
+| Source | Link |
+|--------|------|
+| Repository | https://github.com/safing/portmaster |
+| Website | https://safing.io |
+| SPN Whitepaper | https://safing.io/files/whitepaper/Gate17.pdf |
+| Wiki | https://wiki.safing.io |
+| Issue #1366 (Censorship) | https://github.com/safing/portmaster/issues/1366 |
+| Issue #2031 (WebView Ethics) | https://github.com/safing/portmaster/issues/2031 |
+| Issue #1932 (WebView Force) | https://github.com/safing/portmaster/issues/1932 |
+| Code of Conduct | Contributor Covenant v1.4 (standard community governance) |
+
+---
+
+*Notes compiled for podcast pre-production. Forked from `safing/portmaster` for reference and annotation.*
