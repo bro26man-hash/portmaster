@@ -1,187 +1,148 @@
-# 🎙️ Podcast Research Notes: Digital Rights & Surveillance Technology
+# 🎙️ Podcast Research Notes: Portmaster & the Ethics of Counter-Surveillance
 
-**Project:** safing/portmaster — "Love Freedom — ❌ Block Mass Surveillance"
-**Source:** https://github.com/safing/portmaster (13,738 stars, GPL-3.0, Go)
-**Forked for:** Podcast episode research on digital rights, surveillance tech, and civil liberties
+> **Project:** [safing/portmaster](https://github.com/safing/portmaster) — "🏔 Love Freedom — ❌ Block Mass Surveillance"
+> **Forked to:** `bro26man-hash/portmaster`
+> **Stats:** 13,738 stars · 578 forks · GPL-3.0 · Written in Go · Developed in Austria (EU)
+> **License:** Free & open-source, with paid "Plus/Pro" tiers for advanced features
 
 ---
 
-## 1. PROJECT OVERVIEW
+## 1. PROJECT SUMMARY
 
-**Portmaster** is a free and open-source application firewall for Windows and Linux that intercepts all network traffic at the raw packet level to give users visibility and control over their digital communications.
+Portmaster is a free, open-source **application firewall** that intercepts every network packet on a user's computer at the raw level (using `nfqueue` on Linux, Windows Filtering Platform on Windows). Its stated mission is unequivocal: **"Block Mass Surveillance."**
 
-- **Core tech:** Integrates into the network stack via `nfqueue` on Linux and a kernel driver (WFP) on Windows. Every packet is seen and can be stopped.
-- **Ownership tracking:** Uses eBPF and `/proc` on Linux; kernel driver + IP Helper API on Windows.
-- **Per-app control:** Granular rules per application, including support for Snap, AppImage, scripts (Linux) and Windows Store apps / `svchost.exe` services (Windows).
-- **Secure DNS:** Intercepts "astray" DNS queries, reroutes to itself, resolves via DoT/DoH resolvers. Includes split-horizon and horizon validation against rebinding attacks.
-- **SPN (Safing Privacy Network):** A paid, onion-routing privacy network positioned "between VPN and Tor." Uses multi-hop encryption with routes chosen to maximize distance within the network, and exits chosen near destination servers for geo-unblocking.
-- **Philosophy:** "100% local on your device" (except SPN). All intelligence data (block lists, geoip) downloaded and applied automatically. Updates are fully signed.
+Key technical capabilities:
+- **Raw packet interception** — every packet is seen and can be stopped
+- **per-app firewall rules** — block or allow network access on a per-application basis
+- **Automatic tracker & malware domain blocking** using community-maintained filter lists
+- **Secure DNS** (DNS-over-TLS / DNS-over-HTTPS) with split-horizon validation against rebinding attacks
+- **Safing Privacy Network (SPN)** — a multi-hop onion-routing privacy network positioned "between VPN and Tor"
+- **100% local processing** (except SPN traffic) — no phoning home beyond signed updates and intelligence data
 
-**Key tension:** The project's mission is anti-surveillance ("Block Mass Surveillance"), yet it operates within the proprietary Windows ecosystem and increasingly monetizes features that were once free.
+The project has been featured in *Heise Online*, *ghacks.net*, *Techlore*, and *Lifehacker*, and is widely cited in privacy-orientated communities.
 
 ---
 
 ## 2. SOCIETAL CONCERNS & ETHICAL TENSIONS
 
-### A. The FOSS Identity Crisis — "Portmaster is NOT FOSS"
+### A. The "Failsafe" Dilemma — Fail Open vs. Fail Closed
 
-**Issue #2132** (closed as stale, 6 👍 reactions) ignited a fierce debate about whether a privacy tool that paywalls core features can still claim the "F" in FOSS.
+**Source:** [Issue #329 — "Self-defense and kill-switch"](https://github.com/safing/portmaster/issues/329) (6 comments, closed as completed)
 
-**Key arguments from the community:**
-- **GNOME dropped Portmaster** from its recommended software list, reclassifying it as proprietary rather than FOSS — a significant institutional judgment.
-- **Paywalling features contradicts FOSS philosophy.** The Free Software Foundation's definition holds that users must have the freedom to run, study, share, and modify the software. When Network History, Bandwidth Visibility, VPN Compatibility Mode, VM Support, and Docker Support are locked behind a paywall, critics argue the "Free" in FOSS is hollow.
-- **Kernel-level access raises the stakes.** A critic pointed out that Portmaster runs in kernel space on Windows and asked, "What happens when it BSODs someone?" They demonstrated an easy overflow attack that could crash a machine running Portmaster — raising the question of whether a security tool that can destabilize the system it's meant to protect should have such deep access.
-- **"Simplewall" as a counter-example.** A lightweight, truly FOSS Windows firewall was cited as proof that paywalling isn't necessary for sustainability. However, Portmaster defenders noted that Simplewall doesn't support filter lists (malware, gambling, social-media blocking) and doesn't catch all `svchost.exe` connections — meaning it may miss surveillance vectors that Portmaster catches.
+A community member requested two features:
+1. **Process protection** — preventing Portmaster from being force-killed by third-party process managers
+2. **A kill-switch** — automatically cutting the internet connection if Portmaster detects it is malfunctioning
 
-**🎙️ Podcast angle:** *If a privacy tool paywalls its own surveillance-blocking features, who gets protected? Does the "freedom" in FOSS matter more when the tool is fighting mass surveillance — or is sustainability more important than ideological purity?*
+**Maintainer response (dhaavi):**
+> *"You'll need to be SysAdmin/root to stop Portmaster… I don't think there is a feasible protection against someone who is SysAdmin/root. Once malware has administrator rights you'll have a very bad time anyway."\*
 
----
+**Community developer (ppacher):**
+Discussed Windows "Protected Processes" and kernel driver unload prevention, noting that even protected processes can sometimes be bypassed via driver deregistration.
 
-### B. The Microsoft WebView Dilemma — "Love Freedom, Hate Webview"
+**Power-user perspective (youtdontneedtoknow22):**
+> *"If the Firewall was being used to enforce all connections through a VPN (kind of a Kill-Switch for VPNs with no clients), killing the firewall means revealing the real IP address."*
 
-**Issue #2031** and **#2096** (14+ comments combined) reveal a deep contradiction: a privacy firewall that *requires* Microsoft WebView2 to function.
-
-**The problem:**
-- Portmaster V2 forces users to install Microsoft Edge WebView2 or the firewall won't run at all.
-- WebView2 is a Microsoft proprietary component that auto-updates, carries telemetry, and is foundationed on Chromium — the same engine that powers Google Chrome.
-- Users who have spent years "hardening" Windows (removing telemetry, disabling Microsoft services) are forced to re-introduce a Microsoft component they deliberately eliminated.
-- One user called it: "It would be too ironic if the program that protects my privacy from Microsoft, forced me into installing ms-edge-webview."
-
-**Defender's counterpoint:**
-- A PowerUser argued that Windows is a "Registry-based system" with DCOM, and that asking Portmaster to avoid WebView2 is "like asking Windows to be Linux." They explained that WebView2 is a bare-minimum requirement for interacting with `svchost.exe` and networking services.
-- In V1, Portmaster ran without WebView2. The V2 architecture made it mandatory — a trade-off between functionality and ideological consistency.
-
-**Community workaround discovered:**
-- A developer (stenya) shared a hack: enable "Development Mode" in `config.json`, start the Core service, and access the UI via `http://127.0.0.1:817/` in any browser — bypassing WebView2 entirely.
-- But this is clearly a workaround, not a real solution.
-
-**🎙️ Podcast angle:** *Can you fight surveillance on a platform that's inherently surveillant? The WebView2 dependency exposes a deeper question: when your anti-surveillance tool depends on the very ecosystem it's fighting, is it empowering users or creating a surrogate sense of Security?*
+**🎙️ Podcast angles:**
+- **The asymmetry of defense**: Privacy tools are only as strong as the least-privileged layer. If an adversary gains admin access, the entire security stack is compromised. This mirrors real-world scenarios where authoritarian regimes push legislation to criminalize VPN use or mandate "backdoor" access — the tool becomes illegal before it can be used.
+- **Should a privacy tool be designed to fail-closed (block all traffic when it detects a problem) or fail-open (keep traffic flowing)?** Portmaster currently fails open. The community wanted a failsafe that fails closed. This is a profound design philosophy question with civil-liberties implications: a fails-closed tool protects your anonymity even at the cost of connectivity, while a fails-open tool prioritizes convenience — potentially exposing you.
+- **The "protected process" paradox**: Windows has a "Protected Process Light" mechanism designed specifically for anti-malware services. Portmaster *could* theoretically leverage this, but doing so would make it behave like antivirus software — blurring the line between "privacy tool" and "security tool" in ways that might attract unwanted regulatory attention.
 
 ---
 
-### C. The Monetization-Accessibility Tension
+### B. The Fragility of Anonymity — Tiny Leaks, Real-World Consequences
 
-**Issue #2111** (closed as stale) asked: keep all non-SPN features free.
+**Source:** [Issue #313 — "Portmaster is compatible with Mullvad when setting custom DNS"](https://github.com/safing/portmaster/issues/313) (55 comments, closed as "not planned")
 
-**The concern:**
-- Beyond SPN, features like Network History, Bandwidth Visibility, Weekly Reports, VPN Compatibility Mode, VM Support, and Docker Support are paywalled.
-- These are *local* features that don't require Safing's infrastructure. Putting them behind a paywall feels especially "petty" to critics.
-- The suggestion: monetize SPN (which does use Safing's servers) freely, but keep the core surveillance-blocking functionality accessible to all.
+A user reported that running Mullvad VPN alongside Portmaster resulted in no connectivity. A lengthy debugging session revealed:
+- Mullvad's own DNS handling conflicted with Portmaster's DNS interception
+- The fix required configuring Mullvad to use `127.0.0.1` as its DNS server (letting Portmaster handle DNS)
+- However, another user (TinyJay42) then discovered a **DNS leak** — their real IP was visible to DNS leak detection sites, with a Cloudflare IP appearing instead of their actual address
 
-**The broader pattern:**
-- Multiple issues (#2132, #2031, #2096) were all closed as "stale" or "not planned" without explicit Safing team responses visible in the thread.
-- The community feels the project has drifted from its open-source, freedom-first mission toward a freemium model that creates financial barriers to privacy.
+Most critically, TinyJay42 noticed something disturbing:
+> *"During [signing up for Mailchimp], they populated my real location (city) — with no autofill or storage of my real location anywhere in the browser or even this particular computer."*
 
-**🎙️ Podcast angle:** *When privacy becomes a premium feature, does it stop being a right and start being a luxury? The digital divide of surveillance — if you can't pay for the pro version of your firewall, are you surveilled by default?*
+The DNS leak had allowed Mailchimp to geolocate them, and the leak detection test itself was a **false positive** — VPN providers flag "leaks" when you're not using *their* DNS server, even though Portmaster's encryption still protects your queries.
 
----
-
-### D. User Autonomy vs. "Protective" Paternalism
-
-**Issue #1122** asked for an option to let the system/user manage DNS configuration instead of Portmaster intercepting it.
-
-**The core tension:**
-- Some users have complex DNS setups (DNSSEC, .loki, .snode resolution) that Portmaster breaks.
-- They want Portmaster to "just obey" the system's DNS config — or better, to just sit and watch without interfering.
-- The request: less "nosey" software that respects user autonomy over their own network stack.
-
-**This mirrors a broader debate in privacy tech:**
-- Should a privacy tool *override* user choices to "protect" them, or should it *defer* to user expertise?
-- Portmaster's default "great out-of-the-box" experience means it intercepts DNS whether you want it to or not.
-- The "100% local" claim is partially undermined by automatic block-list and geoip downloads — the tool makes sovereign decisions about what to block, based on Safing's intelligence data.
-
-**🎙️ Podcast angle:** *Who decides what you're allowed to see? When a privacy tool automatically blocks certain domains and routes, is it protecting you — or imposing its own logic on your digital experience? The paternalism of "security by default."*
+**🎙️ Podcast angles:**
+- **The domino theory of privacy**: A single misconfigured DNS setting cascaded into a real-world identification event. This is a powerful narrative device — anonymity isn't binary; it's a chain, and the weakest link is often the one you didn't know existed.
+- **The false-positive paradox**: VPN DNS leak tests are designed to sell anxiety. Portmaster's maintainer explicitly documented that these tests produce false positives, yet users *still* panic. This speaks to the broader problem: the privacy industry monetizes fear, and the line between "educated caution" and "commercial Surveillance Theater" is often blurred.
+- **Re-identification from "anonymous" data**: Mailchimp guessed the user's city from an IP leak — no cookies, no login, no fingerprinting. Just a DNS misconfiguration. This is the same technique used by researchers to "anonymize" datasets that are trivially re-identifiable. The lesson: in a data-rich world, *almost nothing* is truly anonymous.
+- **The layer-cake problem**: Portmaster + Mullvad + DoH/DoT is a *three-layer* privacy stack, yet a single misconfiguration negated all of it. This mirrors how citizens who use multiple privacy tools (encrypted messaging, VPNs, anonymous browsing) can still be de-anonymized through operational security mistakes. The technology is only as strong as the human operating it.
 
 ---
 
-### E. The Kernel-Space Security Paradox
+### C. The Arms Race — Counter-Surveillance Tools in a Hostile World
 
-One of the most alarming criticisms (from #2132) deserves its own spotlight:
+**Source:** Project mission statement + Issue #329 + overall project philosophy
 
-- Portmaster runs in **kernel space** on Windows (via WFP). This means it has the highest possible level of system access.
-- A community member demonstrated an **easy buffer overflow attack** that could BSOD a machine running Portmaster — they explicitly said they wouldn't share the method publicly.
-- The irony: a security tool running in kernel space that *within reach of privilege-escalation attacks* could crash the very system it's protecting.
-- The question: should surveillance-blocking tools have kernel-level access, or should they operate in user space with more limited (but safer) capabilities?
+Portmaster's tagline — **"Block Mass Surveillance"** — is a political statement, not just a feature list. It explicitly names the adversary: *mass surveillance*. This positions the tool not as a general security utility, but as a **civil-liberties instrument**.
 
-**🎙️ Podcast angle:** *The surveillance paradox: to fight surveillance, you must see everything. But the deeper you look, the more damage you can do if you're compromised. Is kernel-level privacy software a trustworthy guardian — or a single point of catastrophic failure?*
+Yet the self-defense issue reveals a troubling reality: **the tool cannot protect itself from a determined adversary with admin access.** A state-level actor who gains administrative control can simply kill Portmaster, uninstall it, or inspect its traffic logs.
 
----
-
-## 3. KEY THEMES FOR THE PODCAST
-
-### Theme 1: **"The Illogic of Fighting Surveillance with Surveillance Infrastructure"**
-- Portmaster blocks trackers and surveillance — but requires Windows (a surveillant OS), Microsoft WebView2 (a Microsoft telemetry component), and automatic downloads of intelligence data from Safing's servers.
-- Can you build a surveillant-free experience on a surveillant foundation?
-
-### Theme 2: **"FOSS or Paywalled? The Digital Rights Credibility Crisis"**
-- When a tool that claims to defend digital rights paywalls its own features, it undermines its moral authority.
-- GNOME's delisting of Portmaster as FOSS is an institutional verdict that matters.
-- The question isn't just "is it free?" but "who gets to decide what privacy costs?"
-
-### Theme 3: **"The Privacy Divide — When Protection Becomes Privilege"**
-- Network History, Bandwidth Visibility, VPN Compatibility — these are local features that cost nothing to provide but are locked behind a paywall.
-- If the baseline of digital self-defense requires a subscription, privacy becomes a luxury good, not a universal right.
-
-### Theme 4: **"Kernel Power, Kernel Risk"**
-- Running in kernel space gives Portmaster god-eye view of all network traffic.
-- It also gives it god-mode access to crash or potentially be exploitationized.
-- The trade-off between visibility and vulnerability is real and under-discussed.
-
-### Theme 5: **"The Paternalism of 'Great Defaults'"**
-- Portmaster's philosophy is "privacy without effort" — but that means it makes decisions for you (DNS routing, block lists, what to intercept).
-- The tension between "easy privacy for everyone" and "respect for advanced users who know their own DNS setup better than the software does."
-
-### Theme 6: **"The Platform Trap"**
-- You can't fight Microsoft's surveillance apparatus from inside it — or at least, it's complicated.
-- WebView2 dependency, `svchost.exe` quirks, Windows Store app support — all evidence that anti-surveillance tools are constrained by the very platform they scrutinize.
+**🎙️ Podcast angles:**
+- **The legality gap**: In some jurisdictions (China, Iran, Russia, UAE), using VPNs or anonymity tools is already criminalized. Portmaster's "kill-switch" feature would be less about malware protection and more about **resisting state coercion** — a function that existing law doesn't accommodate.
+- **The "attack surface" paradox**: To intercept every packet, Portmaster must run at the kernel level. This gives it maximum power — and maximum risk. A kernel-level vulnerability in Portmaster would be *more* dangerous than having no firewall at all. The very architecture that makes it powerful also makes it a high-value target.
+- **Why "open source" matters for civil liberties**: Portmaster's GPL-3.0 license means anyone can audit the code for backdoors or surveillance chips. In an era of supply-chain attacks (e.g., the SolarWinds hack), **transparent, auditable code is itself a civil-liberties safeguard**. A proprietary "privacy tool" is indistinguishable from a surveillance tool unless you can read the source.
 
 ---
 
-## 4. NOTABLE COMMUNITY VOICES & RESOURCES
+### D. The Sustainability Paradox — Can Privacy Be a Public Good?
 
-| Voice | Perspective | Where |
-|-------|-------------|-------|
-| **LCSOGthb** | FOSS purist; argues Portmaster is NOT FOSS; cites GNOME delisting; praises Simplewall | Issue #2132 |
-| **fossFriend** | "Love Freedom, hate Webview"; demands CEF alternative to MS WebView2; production-environment security perspective | Issue #2031 |
-| **8374954** | Privacy-hardcore Windows user; refuses to install WebView2; uses privacy.sexy to strip Microsoft telemetry | Issue #2096 |
-| **Minoresa** | Balanced user of both Simplewall and Portmaster; acknowledges each has strengths | Issue #2132 |
-| **doctorsangria** | Accepts SPN paywall but draws the line there; "The F in FOSS is supposed to stand for something" | Issue #2132 |
-| **ouroborus** | Points out that local features like Network History shouldn't be paywalled | Issue #2132 |
-| **HarriBuh** | "An open-sourced firewall must not rely on Big Tech companies who collect and sell user data" | Issue #2031 |
-| **CommanderTurtle** | Windows architecture defender; argues WebView2 is unavoidable in the Windows ecosystem | Issue #2031 |
-| **stenya (Safing dev)** | Shared the WebView2 bypass workaround (browser UI on port 817) | Issue #2096 |
+**Source:** Project structure (free base + paid SPN/network history features), GitHub discussion culture
 
-**Related projects mentioned in discussions:**
-- **Simplewall** — lightweight, truly FOSS Windows firewall (cited as superior in some respects)
-- **privacy.sexy** — Windows hardening script (undergroundwires/privacy.sexy)
-- **GNOME** — removed Portmaster from FOSS recommendations
+Portmaster is developed by **Safing**, a company based in Austria. The core firewall is free, but advanced features (SPN routing, network history, bandwidth monitoring) are behind a paywall. The free tier explicitly has "limited support."
+
+**🎙️ Podcast angles:**
+- **The gentrification of privacy**: When privacy tools become commercialized, they risk becoming products for people who can *afford* privacy — creating a two-tier system where the wealthy get anonymity and the rest get monitored. This mirrors the broader "privacy divide" in digital rights.
+- **Open-source sustainability**: Portmaster relies on a small team of maintainers (dhaavi, ppacher, stenya, eugenesvk) who appear to be unpaid volunteers or underpaid staff. The project has 103 open issues and a community that is active but not always well-served. Are we expecting volunteer developers to bear the burden of defending civil liberties?
+- **The "free as in freedom" tension**: GPL-3.0 ensures the code stays open, but the *evolution* of the project is guided by a commercial entity. If Safing were acquired, pivoted, or pressured by governments, the project's direction could change without community consent. This happened to OpenSSL (Heartbleed era) and LibreOffice (The Document Foundation fork).
 
 ---
 
-## 5. OPEN QUESTIONS & DISCUSSION PROMPTS
+## 3. KEY QUESTIONS FOR THE PODCAST
 
-1. **Is it ethical for a surveillance-blocking tool to run in kernel space?** What's the risk/reward calculus?
-2. **Should "privacy" be monetized?** If the best firewall for Windows charges for local features, what does that mean for digital equality?
-3. **Can you claim "Love Freedom" while depending on Microsoft's proprietary WebView2?** Is ideological consistency more important than practical functionality?
-4. **Who decides what gets blocked?** When a privacy tool downloads automatic block lists, is it making sovereign decisions on your behalf?
-5. **What happens when the tool becomes the vulnerability?** Kernel-level access is both the superpower and the Achilles' heel.
-6. **Is FOSS a spectrum — or a binary?** Can a tool be "mostly open source" and still claim the FSF's definition of free?
-7. **The "Great Default" paradox:** Does making privacy effortless actually empower users, or does it infantilize them and remove their agency?
+1. **Should privacy tools be designed to fail-closed?** If a firewall detects it's being bypassed, should it cut the internet — or keep you online at the risk of exposure? How does this choice reflect different philosophies about the purpose of privacy?
 
----
+2. **Can an open-source tool truly resist a state actor?** Portmaster's self-defense discussion concluded that root access = game over. Does this mean that client-side privacy tools are fundamentally powerless against determined adversaries — or is that conclusion itself a form of defeatism that discourages people from trying?
 
-## 6. QUICK REFERENCE — KEY ISSUES
+3. **Who gets to define "mass surveillance?"** Portmaster's tagline names it as the enemy, but the definition is politically charged. Is mass surveillance state warrantless bulk collection? Corporate behavioral tracking? Predictive policing algorithms? The tool blocks all of these — but should it?
 
-| # | Title | Ethical Dimension | Status |
-|---|-------|-------------------|--------|
-| #2132 | "Portmaster is NOT FOSS" | FOSS integrity, paywall ethics, GNOME delisting | Closed (stale) |
-| #2031 | "Love Freedom, hate Webview" | Microsoft dependency, vendor lock-in, CEF vs WebView2 | Closed (stale) |
-| #2096 | "Microsoft WebView Is Not Privacy" | Telemetry, platform surveillance, WebView2 removal | Closed (completed) |
-| #2111 | "Keep All Features Free Except SPN" | Access to privacy as universal right vs. freemium | Closed (stale) |
-| #1122 | "Let the system/user manage DNS" | User autonomy vs. tool paternalism | Closed (completed) |
-| #1141 | Performance degradation (70 comments) | Usability vs. security trade-offs | Open |
-| #1932 | "V2 forces Microsoft WebView installation" | Forced dependencies, user choice | Closed (stale) |
+4. **Is the "privacy stack" (VPN + firewall + DoH + onion routing) a form of paranoia or a rational response?** The Mullvad/DNS leak issue shows that even motivated, technically literate users can misconfigure their stack. Does this argue for simpler tools that "just work" — or does it argue that *you should never trust a single layer*?
+
+5. **What's the responsibility of privacy-tool developers to their users' civil liberties?** Is Safing obligated to resist government pressure? Should they embed "circuit breakers" that shut down the network if a government demands backdoor access? Or is that simply software engineering, not activism?
 
 ---
 
-*Notes compiled from GitHub issue analysis. Original discussions at safing/portmaster. Forked to bro26man-hash/portmaster for podcast reference.*
+## 4. USEFUL LINKS & RESOURCES
+
+| Resource | URL |
+|---|---|
+| **Repository** | https://github.com/safing/portmaster |
+| **Fork (yours)** | https://github.com/bro26man-hash/portmaster |
+| **Official Website** | https://safing.io |
+| **SPN Whitepaper** | https://safing.io/files/whitepaper/Gate17.pdf |
+| **Wiki / Docs** | https://wiki.safing.io |
+| **Settings Handbook** | https://docs.safing.io/portmaster/settings |
+| **Developer API Docs** | https://docs.safing.io/portmaster/api |
+| **GitHub Issues** | https://github.com/safing/portmaster/issues (103 open) |
+| **License** | GPL-3.0 (full text in repo) |
+| **Code of Conduct** | Contributor Covenant v1.4 (in repo) |
+| **VPN Compatibility Guide** | https://wiki.safing.io/en/Portmaster/App/Compatibility#vpn-compatibly |
+| **Architecture Overview** | https://wiki.safing.io/en/Contribute |
+
+---
+
+## 5. OPEN ISSUES WORTH MONITORING
+
+These current open issues may develop into newsworthy stories:
+
+| # | Title | Why It Matters |
+|---|---|---|
+| #1141 | Slow connections even when allowed | 70 comments — suggests deep architectural tensions in packet interception |
+| #2066 | DNS intermittently failing | Could indicate systemic instability in the Secure DNS pipeline |
+| #306 | Packaging for NixOS | 35 comments — reveals the accessibility gap: privacy tools should be installable by everyone, not just advanced users |
+| #388 | Import/Export settings | 33 comments — user demand for portability suggests people want to *audit* their own privacy configurations |
+
+---
+
+*Notes compiled from GitHub repository analysis, issue deep-dives, and community discussion review.*
