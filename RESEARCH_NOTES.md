@@ -1,161 +1,182 @@
-# 🎙️ Podcast Research Notes: Portmaster & the Ethics of Counter-Surveillance
+# 🎙️ Podcast Research Notes: Digital Rights & Surveillance Technology
 
-> **Repository:** [safing/portmaster](https://github.com/safing/portmaster)
-> **Forked to:** `bro26man-hash/portmaster`
-> **Stars:** 13,739 | **Forks:** 578 | **License:** GPL-3.0 | **Language:** Go
-> **Tagline:** *"Love Freedom — ❌ Block Mass Surveillance"*
-
----
-
-## 1. Project Overview
-
-**Portmaster** is a free, open-source application firewall developed by **Safing** (based in Austria, EU). It integrates deeply into the network stack — using `nfqueue` on Linux and a kernel driver (WFP) on Windows — to intercept every packet on a device. Its stated mission is to give ordinary users the ability to monitor and control all network activity, automatically block trackers and malware, and route traffic through privacy-enhancing networks.
-
-### Key Features Relevant to Surveillance/Civil Liberties
-- **Full network packet interception** — every connection is visible and controllable
-- **Automatic tracker/malware blocking** via filter lists (privacy protection by default)
-- **Secure DNS (DoT/DoH)** — prevents ISP and intermediary DNS surveillance
-- **SPN (Safing Privacy Network)** — a Tor-like multi-hop onion-routing privacy network (commercial tier)
-- **Per-app rules** — granular control over which applications can communicate
-- **100% local processing** (except SPN) — no third-party phone-home
-
-### Why Portmaster Matters for This Podcast
-Portmaster sits at the intersection of **three major themes**:
-1. **Privacy as a default right** — not an optional add-on
-2. **Counter-surveillance infrastructure** — actively blocking mass surveillance
-3. **The limits of individual tools against state-level adversaries** — the ethical and technical tensions this creates
+> **Primary Project:** [safing/portmaster](https://github.com/safing/portmaster) — "Love Freedom — Block Mass Surveillance"
+> - 13,739 stars | Go | GPL-3.0 | Application firewall for privacy
+> - Forked to: `bro26man-hash/portmaster`
+>
+> **Secondary Project:** [Shawn-Shan/fawkes](https://github.com/Shawn-Shan/fawkes) — Privacy preservation against facial recognition
+> - 5,607 stars | Python | BSD-3-Clause | Academic research project (SANDLab, Univ. of Chicago)
 
 ---
 
-## 2. Societal Concerns & Ethical Tensions
+## 1. Executive Summary
 
-### A. The "Can a Firewall Really Protect You?" Problem
-**Source:** [Issue #329 — Self-defense and kill-switch](https://github.com/safing/portmaster/issues/329)
-
-A user asked whether Portmaster could protect itself from being forcibly killed by third-party tools (e.g., malware or a surveillance agent). The maintainers' response revealed a sobering reality:
-
-- **If an attacker has root/admin access, they can always disable Portmaster.** The maintainer (dhaavi) stated: *"If the malware is SysAdmin/root you're going to have a very bad time anyway."*
-- A **kill-switch** feature (severing internet if the firewall fails) was discussed but deemed uncommon enough to not prioritize.
-- The **asymmetry** is stark: Portmaster can block outgoing connections, but it cannot protect itself from a determined adversary who controls the operating system.
-
-**Podcast angle:** This is the core tension of consumer-grade privacy tools. They empower average users against passive surveillance (ISP tracking, ad networks, data brokers) but are fundamentally powerless against a determined state adversary who controls the device. Where's the line between "privacy tool" and "surveillance illusion"?
-
-### B. Censorship Circumvention & the Right to Information
-**Source:** [Issue #957 — GoodbyeDPI SNI Support](https://github.com/safing/portmaster/issues/957)
-
-A user from a heavily censored country (likely China/Russia/North Korea based on context) requested integration of **GoodbyeDPI** — a tool that encrypts SNI (Server Name Indication) to bypass DPI-based censorship. The issue explicitly mentions:
-
-- *"In certain countries, 'https' is monitored and controlled. However, it violates the right to individual liberty. Block in communist countries. Representative monitoring countries: China, Russia, Korea (Seoul)."*
-- The user noted that existing tools like GoodbyeDPI are flagged as "virus suspect" by antivirus software — creating a paradox where censorship-circumvention tools are themselves treated as threats.
-- **Encrypted SNI (ESNI/ECH)** was discussed as a more elegant solution, but it's not yet widely deployed.
-
-**Podcast angle:** This issue transforms Portmaster from a "personal privacy tool" into a **censorship circumvention instrument**. When a tool designed to block trackers is also used to bypass government firewalls, who is it for? The everyday privacy-conscious user in Berlin, or the dissident in Beijing? Can a single tool serve both without becoming a weapon?
-
-### C. The Commercialization Tension
-**Source:** Repository README & SPN architecture
-
-Portmaster has a **freemium model**:
-- **Free tier:** Core firewall with basic privacy filtering
-- **Plus/Pro tiers ($):** Network history recording, per-app bandwidth monitoring, and **SPN (Safing Privacy Network)** — the multi-hop privacy network
-
-The SPN is described as "between VPN and Tor" — using onion encryption over multiple hops, with routes chosen to maximize distance privacy and exits near destination for geo-unblocking.
-
-**Podcast angle:** This is the uncomfortable truth of open-source privacy tools: **sustainability requires money, and money can create incentives that conflict with mission.** Safing is a for-profit company. The SPN is commercial. Does the freemium model risk turning "blocking mass surveillance" into a premium feature? The GPL-3.0 license ensures the code stays open, but the best features are paywalled.
-
-### D. The "Privacy Washing" Risk
-**Source:** Repository architecture & SPN whitepaper
-
-Portmaster's architecture notes:
-- Everything is "100% local on your device" — **except SPN**
-- SPN nodes are "hosted by Safing (company behind Portmaster) and the community"
-- The kernel driver on Windows uses WFP (Windows Filtering Platform) — a proprietary Microsoft framework
-
-**Podcast angle:** When a privacy tool routes your traffic through the provider's own servers (SPN nodes hosted by Safing), it creates a **new trust dependency**. You're replacing "your ISP can see your traffic" with "Safing can see your traffic." Is this privacy, or just a shift of surveillance from one entity to another? The Tor model avoids this by having no central operator — but SPN is a for-profit service.
-
-### E. The Accessibility Gap
-**Source:** General observation from README & community issues
-
-Portmaster requires:
-- Root/admin privileges to function
-- Kernel-level integration (nfqueue on Linux, WFP kernel driver on Windows)
-- Technical knowledge to configure advanced rules
-
-**Podcast angle:** The people who most need counter-surveillance tools — journalists, activists, dissidents — may lack the technical expertise to configure a kernel-level firewall. Meanwhile, the technologically literate users who *can* configure it may not face the same level of surveillance risk. **Who actually benefits from this tool?**
+This document synthesizes research from two of the most notable open-source projects in the surveillance/privacy-tech space, along with community discussions touching on ethics, civil liberties, and the fundamental tensions in building and using counter-surveillance tools. It is intended as a starting point for podcast episode planning.
 
 ---
 
-## 3. Key Themes for Podcast Discussion
+## 2. Project Profiles
 
-### Theme 1: The Illusion of Control
-Portmaster gives you a UI that says "Block Mass Surveillance." But the moment an adversary gains admin access, that illusion shatters. What does it mean when a privacy tool's marketing promises exceed its actual capabilities? How should we communicate the *limits* of these tools to the public?
+### 2a. Portmaster (safing/portmaster)
 
-### Theme 2: Privacy Tools as Censorship Tools
-Issue #957 reveals that Portmaster's DNS interception and SPN can serve as censorship-circumvention infrastructure. But this creates a dilemma: should a privacy tool *deliberately* integrate censorship-circumvention features? What are the legal and ethical implications of building a tool that could be used to bypass government firewalls?
+**What it is:** A free, open-source application firewall for Windows and Linux that intercepts every network packet at the raw level (via `nfqueue` on Linux, WFP kernel driver on Windows). It gives users granular, per-app control over network activity — blocking trackers, malware, and any connection the user chooses.
 
-### Theme 3: The Trust Problem
-Even the best open-source privacy tool requires trust assumptions. Who operates the SPN nodes? What data do they collect? What could compelled governments force them to reveal? The GPL protects the code, but it doesn't protect the operational reality.
+**Key features relevant to the podcast:**
+- **Per-app firewalling:** Every process on the computer can be monitored and controlled.
+- **Secure DNS (DoT/DoH):** Prevents ISP-level DNS surveillance.
+- **SPN (Safing Privacy Network):** A paid, centralized "privacy network" that uses onion routing (like Tor) but with exit nodes near destinations for geo-unblocking.
+- **Network history & bandwidth monitoring:** Local-only recording of all connections.
+- **GPL-3.0 license:** The core software is fully open-source and copylefted.
 
-### Theme 4: Sustainability vs. Mission
-A for-profit company (Safing) builds a tool with the motto "Love Freedom — Block Mass Surveillance." The free version is genuinely useful. The premium features (SPN, history) are where the money is. Is this a viable model for privacy tech? Or does it inevitably lead to "privacy for those who can pay"?
+**What makes it newsworthy:**
+- Explicitly branded as an anti-surveillance tool ("❌ Block Mass Surveillance").
+- Developed in the EU (Austria), subject to GDPR and European digital rights frameworks.
+- 13,739 GitHub stars, 578 forks — significant community adoption.
+- The SPN introduces a **commercial, centralized layer** to an otherwise decentralized/open-source tool — a tension worth exploring.
 
-### Theme 5: The Arms Race
-Portmaster is part of an ongoing arms race between privacy advocates and surveillance capabilities. Every feature Portmaster adds (DPI bypass, SPN, encrypted DNS) is matched by counter-measures (deep packet inspection, SNI filtering, traffic analysis). The podcast could explore: **Can individual tools ever win an arms race against state-level surveillance? Or is this a losing game that requires systemic change?**
+### 2b. Fawkes (Shawn-Shan/fawkes)
 
-### Theme 6: The Ethical Weight of "Default Settings"
-Portmaster's philosophy is "privacy by default" — great defaults that work without effort. This is an ethical stance: the path of least resistance should be the privacy-respecting one. But it also means users who don't customize may have a false sense of security. How do we design tools that are both easy to use *and* honest about their limitations?
+**What it is:** A privacy protection system developed by SANDLab at the University of Chicago that applies subtle, invisible perturbations to facial images, making them unrecognizable to facial recognition models while still appearing normal to human eyes. Published at *USENIX Security 2020*.
 
----
+**Key features relevant to the podcast:**
+- **Data poisoning approach:** Fawkes doesn't encrypt or hide — it *changes* your face data just enough to confuse ML models.
+- **Three perturbation modes:** Low, mid, high — trading off between image quality and protection strength.
+- **Academic paper:** [Fawkes: Protecting Personal Privacy against Unauthorized Deep Learning Models](https://www.shawnshan.com/files/publication/fawkes.pdf)
 
-## 4. Notable Community Discussions & Issues
-
-| Issue | Title | Relevance | Key Takeaway |
-|-------|-------|-----------|--------------|
-| [#329](https://github.com/safing/portmaster/issues/329) | Self-defense and kill-switch | **High** — Ethics of self-protection | Root/admin access always wins; kill-switch not prioritized |
-| [#957](https://github.com/safing/portmaster/issues/957) | GoodbyeDPI SNI Support | **High** — Censorship circumvention | User from censored country requests DPI bypass integration |
-| [#1141](https://github.com/safing/portmaster/issues/1141) | Slow connections when allowed | Medium — Usability vs. protection | 70 comments; shows tension between blocking and performance |
-| [#829](https://github.com/safing/portmaster/issues/829) | Admin privilege handling | Medium — Accessibility | Tool requires elevated privileges, creating barrier to entry |
-
----
-
-## 5. Comparative Context: Other Notable Projects Found
-
-| Project | Stars | Focus | Distinction from Portmaster |
-|---------|-------|-------|---------------------------|
-| **privacyguides.org** | 4,256 | Privacy software curation | Resource, not a tool itself |
-| **privacytools.io** | 3,145 | Privacy service recommendations | Resource, not a tool itself |
-| **berty** | 9,301 | P2P messaging without internet | Different threat model (offline comms) |
-| **Scout (tevora-threat)** | 384 | Surveillance detection | Physical world, not network |
-| **WhereAreTheEyes** | 246 | Surveillance camera mapping | Physical world, crowd-sourced |
-| **image-scrubber** | 1,015 | Anonymizing protest photos | Different use case (visual privacy) |
-| **GoodbyeDPI** | Referenced | SNI encryption / DPI bypass | The tool Portmaster users want integrated |
+**What makes it newsworthy:**
+- Represents the "counter-surveillance" end of the spectrum — not just hiding from surveillance, but actively *poisoning* the surveillance models.
+- Research-grade tool with real academic rigor, but community usage has revealed fundamental limitations.
 
 ---
 
-## 6. Suggested Podcast Angles & Questions
+## 3. Societal Concerns & Ethical Tensions
 
-1. **"Can a Firewall Love Freedom?"** — The gap between marketing slogans and technical reality
-2. **"Your Privacy Tool Is a Censorship Tool (Whether You Like It or Not)"** — When privacy features become resistance features
-3. **"Who Watches the Watchmen?"** — The trust problem when your privacy tool routes through the vendor's servers
-4. **"Privacy for the Privileged?"** — The accessibility and commercialization tensions in privacy tech
-5. **"The Arms Race Nobody Wins"** — Why individual tools can't outrun state-level surveillance
-6. **"Default to Private, Default to Honest"** — Can privacy tools be both easy to use and transparent about limitations?
+### 3a. The Effectiveness Paradox
+
+**Core tension:** Counter-surveillance tools can only work if the surveillance systems they target are imperfect. Once those systems adapt, the tools become obsolete — and users may develop a false sense of security.
+
+**Evidence from Fawkes community issues:**
+- **Issue #138** ("No effect on AWS Rekognition?"): A user tested Fawkes-cloaked images against AWS Rekognition and found 100% similarity matching. Even at `--mode=high`, the perturbations were visible and AWS still identified the same person.
+- **Issue #138 comment by tbeckenhauer:** Tested two different cloaked images of the same person against facial recognition — got 99.9%, 99.5%, and 99.3% similarity for low/mid/high modes. Concluded: *"I imagine these facial recognition tools saw all the publicity for Fawkes and started training their networks to recognize cloaked images."
+- **Issue #138 comment by ghost (Oct 2023):** Linked to a [Register article](https://www.theregister.com/2022/03/15/research_finds_data_poisoning_cant/) concluding that **large players have already trained their models to resist data poisoning** — essentially declaring Fawkes effectively defeated at scale.
+- **Issue #192** ("Does this still work today?"): A user asked whether Fawkes still works against modern models — no one has confirmed it still does.
+
+**Podcast angle:** *"The cat-and-mouse game between privacy tools and surveillance AI is asymmetric. Companies have near-infinite data and compute; individual users have a checkbox and a thesis. What does 'winning' even look like?"
+
+### 3b. The Centralization Tension
+
+**Core tension:** Tools that claim to protect individual privacy can simultaneously introduce new centralized points of control.
+
+**Evidence from Portmaster:**
+- **SPN (Safing Privacy Network):** While Portmaster's core is GPL-3.0 and fully local, the SPN is a **paid, proprietary, centralized service** run by the same company that built the firewall. Users route traffic through Safing-operated nodes.
+- The SPN whitepaper describes onion encryption over multiple hops (Tor-like), but **exit nodes are chosen near destination servers** — a design choice that prioritizes speed and geo-unblocking over maximum anonymity.
+- **Community concern:** The open-source community (13,739 stars, 578 forks) has at times debated whether a commercial privacy service built on top of an open-source anti-surveillance tool creates a trust problem. What data does Safing collect about SPN users? Can they be compelled to disclose it?
+
+**Podcast angle:** *"Can a company that sells you privacy be trusted with your privacy? The Portmaster SPN asks us to reconsider what 'open-source privacy' means when the most convenient option is a paid, closed service."
+
+### 3c. The False Security Problem
+
+**Core tension:** Privacy tools may give users a false sense of protection, leading them to behave more recklessly online.
+
+**Evidence:**
+- Fawkes' own developer (Shawn Shan) acknowledged in **Issue #95** that all cloaked images of the same person are still recognized as the same person by facial recognition systems: *"It would be great to make all images to appear as different person. But it is a much harder task and we can't support that currently."
+- This means a Fawkes user might believe their face is fully protected, when in reality it's only protected against *some* models under *specific* conditions.
+- Portmaster's "great defaults" philosophy (as stated in its README) — *"With great defaults your privacy improves without any effort"* — could similarly lull users into believing they're fully protected when they're only partially shielded.
+
+**Podcast angle:** *"Is the privacy app on your phone a shield or a comfort blanket? The psychology of 'feeling safe' versus 'being safe' in the digital age."
+
+### 3d. The Arms Race Asymmetry
+
+**Core tension:** Surveillance technology is funded by nation-states and corporations; counter-surveillance tools are typically built by academics and volunteers.
+
+**Evidence:**
+- Fawkes is a university research project (SANDLab, University of Chicago) with academic funding. Its maintenance has lagged — Issue #192 (April 2026) asks if it "still works today" with no authoritative answer from the team.
+- Portmaster is built by a small Austrian company (Safing). While it has persisted and evolved, its SPN commercial model raises questions about sustainability vs. mission drift.
+- Surveillance systems (facial recognition, mass DNS monitoring, social media scraping) are deployed by entities with vastly more resources.
+
+**Podcast angle:** *"David vs. Goliath, but Goliath has a budget 1,000x bigger. What does it mean for the future of digital rights when privacy is technologically outmatched but culturally ahead?"
+
+### 3e. The "Who Watches the Watchmen" Problem
+
+**Core tension:** Any tool that can block surveillance can also be used to enhance surveillance. The same network-interception technology that protects you can be repurposed.
+
+**Evidence:**
+- Portmaster uses `nfqueue` (Linux) and WFP (Windows) — kernel-level packet interception. This is the same class of technology used by:
+  - Corporate DLP (Data Loss Prevention) systems
+  - Government deep packet inspection (DPI)
+  - Censorship firewalls (e.g., Great Firewall of China)
+- The open-source nature of Portmaster (GPL-3.0) means the code is available for anyone to modify — including for surveillance purposes.
+- **No open issues directly address this**, but it's a glaring absence in the project's ethical discourse.
+
+**Podcast angle:** *"The technology that protects your privacy is the same technology that protects theirs. Who gets to decide which side it's on?"
+
+### 3f. Bias & Misidentification in Facial Recognition
+
+**Core tension:** Facial recognition systems are known to have higher error rates for people of color, women, and non-binary individuals. Counter-surveillance tools that claim to protect "everyone" may not account for these disparities.
+
+**Evidence:**
+- Fawkes' testing methodology (per Issue #67 and #125) relies on the **WebFace dataset** (10,000+ labels) — a standardized academic benchmark. But real-world deployment involves biased, unevenly trained models.
+- The developer himself cautioned against testing with celebrity images (**Issue #67**): *"Please do not use celebrity pictures for test. Because most of the facial recognition models have already trained on celebrities."
+- This implies Fawkes' effectiveness may vary significantly across different demographics — a concern that has **never been formally studied or published**.
+
+**Podcast angle:** *"If you're a Black woman, does Fawkes protect you? If facial recognition misidentifies you 35x more often, does 'protection' mean something different for you?"
 
 ---
 
-## 7. Key Quotes for the Episode
+## 4. Key GitHub Discussions & Issues Reference
 
-> *"Love Freedom — ❌ Block Mass Surveillance"*
-> — Safing/Portmaster tagline
+| Issue | Project | Topic | Podcast Relevance |
+|-------|---------|-------|-------------------|
+| [#138](https://github.com/Shawn-Shan/fawkes/issues/138) | Fawkes | Fawkes doesn't work against AWS Rekognition | ⭐⭐⭐ Central to effectiveness debate |
+| [#192](https://github.com/Shawn-Shan/fawkes/issues/192) | Fawkes | "Does this still work today?" | ⭐⭐⭐ Questions about current relevance |
+| [#95](https://github.com/Shawn-Shan/fawkes/issues/95) | Fawkes | All cloaked images show as same person | ⭐⭐⭐ Fundamental limitation |
+| [#67](https://github.com/Shawn-Shan/fawkes/issues/67) | Fawkes | Doesn't protect against Face++ | ⭐⭐ Real-world model variation |
+| [#125](https://github.com/Shawn-Shan/fawkes/issues/125) | Fawkes | AWS Rekognition high similarity | ⭐⭐ Reinforces #138 findings |
+| [#152](https://github.com/Shawn-Shan/fawkes/issues/152) | Fawkes | Non-adversarial training versions don't work | ⭐⭐ Technical gap |
+| Portmaster issues | Portmaster | Mostly technical bugs/features | ⭐ SPN commercial tension not discussed in issues |
 
-> *"If the malware is SysAdmin/root you're going to have a very bad time anyway."*
-> — dhaavi (Portmaster maintainer), on the limits of self-defense features
-
-> *"In certain countries, 'https' is monitored and controlled. However, it violates the right to individual liberty."*
-> — Issue #957 contributor, on censorship circumvention
-
-> *"Everything is 100% local on your device. (except the SPN, naturally)"*
-> — Portmaster README, an inadvertent confession about the trust boundary
+**Notable absence:** Neither project has dedicated issues or discussions tagged with "ethics," "civil liberties," or "surveillance" — suggesting these conversations happen in external spaces (academic papers, news articles, social media) rather than within the projects themselves.
 
 ---
 
-*Notes compiled from GitHub repository analysis, open issue review, and community discussion. Forked from [safing/portmaster](https://github.com/safing/portmaster) for research purposes.*
+## 5. Suggested Podcast Episode Angles
+
+### Angle A: "The Illusion of Control"
+Explore how privacy tools create a *feeling* of agency without delivering *actual* protection. Use Fawkes' limitations and Portmaster's SPN as case studies.
+
+### Angle B: "Open Source, Closed Reality"
+Investigate the gap between what open-source privacy tools *promise* (transparency, community control) and what they *deliver* (often commercialized, centralized, or effectively defeated).
+
+### Angle C: "The Datenschutz Dilemma" (The Data Protection Dilemma)
+Focus on the EU-specific angle: Portmaster is built in Austria under GDPR. How does European regulatory culture shape what "privacy" means — and does it create a false sense of superiority?
+
+### Angle D: "Arms Race Economics"
+Compare the resource asymmetry between surveillance deployers (governments, corporations) and counter-surveillance builders (academics, FOSS communities). What funding models could level the playing field?
+
+### Angle E: "Who Is Privacy For?"
+Examine whether privacy tools are designed with the needs of privileged users (celebrities, tech-literate Westerners) in mind, and whether they fail marginalized communities who face the most surveillance.
+
+---
+
+## 6. Additional Resources for Research
+
+- **Fawkes academic paper:** https://www.shawnshan.com/files/publication/fawkes.pdf
+- **Portmaster SPN Whitepaper:** https://safing.io/files/whitepaper/Gate17.pdf
+- **The Register article on data poisoning defeat:** https://www.theregister.com/2022/03/15/research_finds_data_poisoning_cant/
+- **Portmaster website:** https://safing.io
+- **Fawkes project page:** https://sandlab.cs.uchicago.edu/fawkes/
+- **PrivacyGuides (companion project):** https://github.com/privacyguides/privacyguides.org
+
+---
+
+## 7. Open Questions for Guests/Interviewees
+
+1. Should open-source privacy tools be required to publish formal effectiveness assessments? Should there be an independent "Privacy Tool Audit" analogous to security audits?
+2. Is it ethical for a company to monetize a privacy network (SPN) built on top of an anti-surveillance firewall? Where's the line between sustainability and mission drift?
+3. If counter-surveillance tools are effectively defeated at scale, should researchers be more transparent about this — or would that discourage adoption and make things worse?
+4. How should facial recognition regulation account for the existence of tools like Fawkes? Should using Fawkes be legally protected as a form of expression?
+5. Can "privacy by design" coexist with "surveillance by design" in the same operating system? What would a truly neutral network stack look like?
+
+---
+
+*Created for podcast research purposes. All GitHub issues referenced are publicly available at the URLs above.*
