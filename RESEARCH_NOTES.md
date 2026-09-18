@@ -1,130 +1,238 @@
-# 🎙️ Podcast Research Notes: Digital Rights & Surveillance Technology
+# 🎙️ RESEARCH NOTES — Digital Rights & Surveillance Technology
 
-> **Project under review:** [safing/portmaster](https://github.com/safing/portmaster) — *"Love Freedom — ❌ Block Mass Surveillance"*
-> Forked for research: [bro26man-hash/portmaster](https://github.com/bro26man-hash/portmaster)
->
-> 13,737 stars · 578 forks · Go · GPL-3.0 · 103 open issues · Active development (updated Sept 2026)
-
----
-
-## 1. PROJECT OVERVIEW
-
-**Portmaster** is a free, open-source application firewall developed in the EU (Austria) that intercepts all network traffic at the raw packet level to give users full visibility and control over their computer's network activity. It blocks trackers, malware, and surveillance at the network perimeter, and offers a commercial privacy network (SPN) as an optional layer.
-
-### Key Technical Features
-- **Raw packet interception** via `nfqueue` (Linux) and Windows Filtering Platform / kernel driver (Windows)
-- **Per-app network rules** — block or allow connections on a per-application basis
-- **Automatic tracker & malware block lists** with geo-IP intelligence
-- **Secure DNS** (DoH/DoT) with split-horizon and rebinding-attack defense
-- **Safing Privacy Network (SPN)** — onion-routing privacy network positioned "between" VPN and Tor
-- **100% local processing** (except SPN traffic) — no telemetry, no cloud dependencies for core function
-
-### Why This Project Matters
-Portmaster sits at the intersection of **network security** and **civil liberties**. Its explicit mission — "Block Mass Surveillance" — makes it a ideological artifact as much as a technical tool. It's not just a firewall; it's a statement that network-level privacy is a right worth engineering for.
+> **Podcast episode research notes**  
+> Compiled from GitHub open-source projects in the surveillance, privacy, and counter-surveillance space.  
+> Focus project: **Portmaster** (safing/portmaster) — 13,739★, GPL-3.0, Go  
+> Companion project: **ShadowBroker** (BigBodyCobain/Shadowbroker) — 11,184★, AGPL-3.0, Python/Next.js
 
 ---
 
-## 2. SOCIETAL CONCERNS
+## 1. THE LANDSCAPE — What We Found
 
-### A. Mass Surveillance Infrastructure
-Portmaster exists because **mass surveillance is industrialized**. Governments and corporations deploy comprehensive data collection systems — from ISP-level logging to facial recognition cameras to smartphone telemetry. The project's tagline ("Love Freedom — ❌ Block Mass Surveillance") frames surveillance not as a security tool but as a **freedom threat**. This is the philosophical core: privacy is not about hiding something wrong, it's about maintaining autonomy.
+### 1A. Portmaster (safing/portmaster)
 
-**Podcast angle:** *"If your network traffic is the modern equivalent of your mail, who has the right to read it?"*
+**What it is:** A free, open-source application firewall that intercepts every packet at the kernel level to give users full visibility and control over their network activity. Its tagline: *"Love Freedom — ❌ Block Mass Surveillance."*
 
-### B. The Asymmetry of Surveillance
-Surveillance is **cheap and ubiquitous**; counter-surveillance is **expensive and technically demanding**. Portmaster requires kernel-level integration, ongoing block-list maintenance, and user knowledge to configure effectively. This creates a **surveillance asymmetry** where well-resourced actors (states, corporations) can observe everyone, but only technically sophisticated individuals can effectively hide.
+**Key technical features:**
+- **Kernel-level packet interception** — Uses `nfqueue` on Linux and Windows Filtering Platform (WFP) on Windows. Every packet is seen and can be stopped.
+- **eBPF-based connection ownership** — Identifies which process owns each connection (Linux). On Windows, uses kernel driver + IP Helper API.
+- **Secure DNS** — Intercepts "astray" DNS queries and reroutes to DoT/DoH resolvers. Split-horizon validation defends against rebinding attacks.
+- **Privacy Filter** — Rules based on domains, IPs, countries. Filter lists block malware, ad, and tracker domains.
+- **SPN (Safing Privacy Network)** — Onion encryption over multiple hops (like Tor), but routes are chosen to maximize distance within the network and exits are chosen near destination servers for geo-unblocking.
+- **Per-app controls** — Granular rules for individual applications, including Windows Store apps, Snap, AppImage, and scripts.
+- **100% local** (except SPN) — All processing happens on-device. Updates are signed and downloaded automatically.
 
-**Podcast angle:** *"Is privacy a luxury good? When counter-surveillance requires root access and configuration knowledge, who gets to hide?"*
+**Community & reach:**
+- 13,739 stars, 578 forks on GitHub
+- GPL-3.0 licensed
+- Written in Go
+- Featured on Heise Online, ghacks.net, Techlore, Lifehacker
+- 103 open issues (mostly technical bugs/feature requests — not ethics-focused)
+- Topics: `application-firewall`, `dns`, `firewall`, `privacy-by-design`, `privacy-enhancing-technologies`, `privacy-protection`, `privacy-tools`
 
-### C. Centralization vs. Decentralization Tension
-Portmaster's SPN (Safing Privacy Network) is a **centralized privacy network** run by the company Safing and community nodes. This creates a tension: the tool fights mass surveillance, but the SPN introduces a **new central point of trust**. Users must trust Safing not to log SPN traffic, not to compromise nodes, and not to yield to legal compulsion. This mirrors the broader privacy-tech dilemma: **tools that fight surveillance often replicate the centralization they claim to oppose**.
+**What the open issues reveal:**  
+The 103 open issues are overwhelmingly technical (bug reports, feature requests, UI improvements, compatibility). There are *no* open issues tagged or discussing ethics, civil liberties, or societal concerns. This is itself notable — it suggests either (a) the community sees Portmaster as a tool, not a movement, or (b) ethical questions are discussed elsewhere (forums, mailing lists) and not surfaced as GitHub issues.
 
-**Podcast angle:** *"Can a centralized tool truly fight mass surveillance, or does it just become surveillance with a different logo?"*
+### 1B. ShadowBroker (BigBodyCobain/Shadowbroker) — Companion Project
 
-### D. The "Self-Defense" Problem
-Issue #329 ("Self-defense and kill-switch") reveals a deep concern: **what happens when surveillance actors try to disable your defenses?** The discussion explored whether Portmaster should resist forced termination by processes with admin/root privileges. The maintainer's response — "if malware is SysAdmin/root you're going to have a very bad time anyway" — reflects a **pragmatic security posture**, but civil-liberties advocates would argue that the inability of ordinary users to resist process-killing by third parties mirrors the inability of ordinary citizens to resist state surveillance.
+**What it is:** A decentralized global intelligence platform that aggregates real-time telemetry from 60+ live feeds into a single map interface. Aircraft, ships, satellites, conflict zones, CCTV networks, GPS jamming, police scanners, mesh radio — all on one screen.
 
-**Podcast angle:** *"If a firewall can be forcibly killed by any admin-level process, is it really a defense — or just a speed bump for the determined?"*
+**Why it matters for the episode:**  
+ShadowBroker is the *other side* of the surveillance coin. Where Portmaster blocks surveillance, ShadowBroker *aggregates and visualizes* publicly available surveillance data. It raises the question: **Is aggregating public surveillance data a form of surveillance itself?**
 
-### E. The EU vs. US Regulatory Divergence
-Portmaster is developed in Austria under EU privacy frameworks (GDPR, ePrivacy Directive). This creates a **regulatory asymmetry**: European residents have legal privacy rights that Americans don't. Portmaster's existence is partly a product of this divergence — it fills the gap where legal protections are absent or weaker.
+**Key features with ethical weight:**
+- **22,000+ live CCTV cameras** across 10 countries (UK, US, Spain, Singapore, Austria, Netherlands, etc.)
+- **Satellite imagery at 10m resolution** (Sentinel-2) — sufficient to identify individuals in some contexts
+- **Shodan integration** — search internet-connected devices: cameras, SCADA systems, databases
+- **Telegram OSINT scraping** — public war/conflict feeds geoparsed onto the map
+- **AI agent command channel** — any compatible LLM agent can autonomously query all data layers, run recon, and place "intel pins" on the map
+- **InfoNet mesh** — obfuscated messaging (explicitly labeled as *NOT* end-to-end encrypted; the project warns: *"Do not transmit anything sensitive on any channel"*)
+- **"Sovereign Shell" governance** — on-chain petitions, upgrade-hash voting, dispute markets for the decentralized intelligence platform
 
-**Podcast angle:** *"When law fails, code steps in. Is open-source privacy tech a substitute for rights — or evidence that rights are insufficient?"*
+**Self-described stance:**  
+> "The project does not introduce new surveillance capabilities — it aggregates and visualizes existing public datasets. It is fully open-source so anyone can audit exactly what data is accessed and how."
 
----
-
-## 3. ETHICAL TENSIONS
-
-### Tension 1: Free vs. Paid Privacy
-Portmaster offers a **free tier** with core firewall features and a **paid tier** (Plus/Pro) that unlocks SPN, network history, and per-app bandwidth monitoring. The free version has "limited support" per maintainer Raphty. This creates an ethical question: **is privacy a right or a commodity?** If advanced privacy features require payment, does that create a **privacy class system** where the wealthy can hide and the poor cannot?
-
-### Tension 2: Block Lists as Censorship
-Portmaster uses automated block lists to filter "malware, ad, tracker domains." But who decides what counts as a tracker? Block lists are **opaque, unaccountable, and potentially over-broad**. A domain could be blocked because it serves ads — but that same domain might also serve legitimate content for activists in authoritarian regimes who rely on ad-supported websites. **Privacy tools that censor raise the question: does filtering surveillance also filter truth?**
-
-### Tension 3: The SPN Trust Model
-The Safing Privacy Network uses onion encryption over multiple hops (like Tor), but routes are chosen to **cover most distance within the network** and exits are chosen **near the destination server** for geo-unblocking. This is a deliberate trade-off: **privacy for convenience**. The exits being near destinations means SPN is faster than Tor but also means the exit nodes are more identifiable and potentially more vulnerable to traffic analysis.
-
-### Tension 4: Open Source vs. Open Auditability
-Portmaster is open-source (GPL-3.0), but the **kernel driver on Windows** and the **SPN node software** are not fully auditable by most users. The average user cannot verify what the kernel driver does at the packet level. This reflects a broader problem in privacy tech: **open source does not mean open to scrutiny**. The trust model requires users to trust the maintainers' code as much as they would trust a proprietary tool.
-
----
-
-## 4. BROAD PODCAST ANGLES
-
-### Angle A: "The Privacy Arms Race"
-Surveillance technology evolves (AI-powered facial recognition, license plate readers, bulk metadata collection). Counter-surveillance tools like Portmaster evolve in response. But the **arms race is fundamentally asymmetric** — surveillance is offense, and offense has the advantage. What does it mean for civil liberties when the defense can never fully catch up?
-
-### Angle B: "Code Is Law"
-Portmaster's maintainers make unilateral decisions about what gets blocked, how SPN routes work, and what features are free vs. paid. In the absence of democratic oversight, **the codebase becomes a form of law**. Is it legitimate for a private company to make surveillance-policy decisions that affect millions of users? Should there be a governance model for privacy tools?
-
-### Angle C: "The Privacy Privilege"
-The most techno-advanced privacy tools remain accessible primarily to **Western, educated, technically literate users**. Communities in the Global South, journalists in authoritarian states, and activists under repressive regimes often lack the resources, infrastructure, or technical knowledge to use tools like Portmaster effectively. Does the open-source privacy movement inadvertently serve the already-privileged?
-
-### Angle D: "When Surveillance Is Infrastructure"
-Modern surveillance isn't just cameras and wiretaps — it's **embedded in the network itself**. ISPs log DNS queries. Cloud providers monitor API calls. Operating systems phone home. Portmaster operates at the network stack level, which means it's fighting not just individual surveillance tools but **the architecture of connectivity itself**. This raises the question: can privacy be achieved through software when the infrastructure is fundamentally designed for visibility?
-
-### Angle E: "The SPN Dilemma — Trust the Network"
-SPN positions itself as a privacy network, but it requires trusting Safing's infrastructure. This is a **microcosm of the broader privacy-tech industry**: companies like ProtonVPN, Mullvad, and NordVPN all ask users to trust their no-logging claims. But trust is not verification. The podcast could explore whether **any privacy tool that requires trusting a third party is fundamentally contradictive** to the concept of privacy.
-
-### Angle F: "Civil Liberties in the Age of Automated Surveillance"
-Portmaster's block lists make automated decisions about what traffic is "safe" and what is "surveillance." This mirrors the broader societal shift toward **automated governance** — algorithmic content moderation, automated border control, predictive policing. When machines decide what you can and cannot access, who is accountable when they get it wrong?
+This disclaimer is itself an ethical statement worth unpacking on the podcast.
 
 ---
 
-## 5. KEY QUOTES & REFERENCES FOR THE EPISODE
+## 2. SOCIETAL CONCERNS — The Big Themes
 
-| Source | Quote | Context |
-|--------|-------|---------|
-| Portmaster README | *"Love Freedom — ❌ Block Mass Surveillance"* | The project's ideological mission statement |
-| Portmaintainer (dhaavi) | *"We do take this very seriously, and nothing should ever be able to interfere or control the Portmaster except for the user."* | Issue #329 — self-defense discussion |
-| Maintainer (ppacher) | *"Once malware has administrator rights you will have a very bad time anyway."* | Issue #329 — pragmatic security posture vs. civil-liberties concern |
-| User (youdontneedtoknow22) | *"The firewall was being used to enforce all connections through a VPN — killing the firewall means revealing the real IP address."* | Issue #329 — real-world surveillance risk of process termination |
-| Portmaster Website | *"With great defaults your privacy improves without any effort."* | The promise of frictionless privacy |
-| GPL-3.0 License | Copyleft protection | Ensures that privacy tooling remains free and open |
+### 2A. The Asymmetry of Surveillance
+
+**The core tension:** States and corporations have near-unlimited capacity to surveil citizens. Individuals have almost no comparable capacity. Tools like Portmaster attempt to rebalance this asymmetry — but do they succeed?
+
+**Discussion angles:**
+- Portmaster gives an *individual* the power to see and block network surveillance. Is this enough when the other side has nation-state resources?
+- ShadowBroker gives an *individual* the power to see what states and corporations are doing (tracking Air Force One, billionaire jets, military satellites). This is "reciprocal transparency" — but does it create accountability or just escalation?
+- **Podcast question:** *Can privacy tools ever truly levels the playing field, or do they just create an illusion of parity?*
+
+### 2B. Who Watches the Watchmen?
+
+**Portmaster's own architecture raises this:**
+- Portmaster runs as a **system service** with kernel-level access. It sees *every* packet on your computer. This means Portmaster itself becomes a surveillance tool — just one pointed inward instead of outward.
+- The SPN (Privacy Network) routes traffic through **nodes operated by Safing** (the company behind Portmaster). Safing can see your traffic. The project says nodes are also hosted by the community, but the company's role as a potential surveillance point is underexplored.
+- **GPL-3.0 license** means the code is auditable — but *who actually audits it?* Open-source is necessary but not sufficient for trust.
+- **Podcast question:** *If a privacy tool has deep enough access to protect you, doesn't it also have enough access to surveil you? How do you build a lock that the locksmith can't pick?*
+
+**ShadowBroker amplifies this:**
+- ShadowBroker integrates **Shodan** (internet device search), **recon toolkits** (WHOIS, DNS, BGP, CVE lookups), and **AI agents** that can autonomously run surveillance. The "watchmen" here are any user with a Docker install.
+- The project explicitly states it does NOT introduce new surveillance capabilities — but the *aggregation* of 60+ feeds into a single, AI-queryable interface *is* a new capability. It's the difference from having 60 separate tabs open.
+- **Podcast question:** *Is aggregation a form of creation? If you assemble publicly available fragments into a coherent picture, have you created something new — and do the original sources have any say?*
+
+### 2C. The Ethics of "Public Data" Aggregation
+
+**ShadowBroker's disclaimer:** "A surprising amount of global telemetry is already public."
+
+**But is it truly public?**
+- ADS-B broadcasts are public by protocol design — but the *implication* of tracking every private jet globally is profound.
+- AIS vessel data is public — but tracking billionaire superyachts raises stalking concerns.
+- Police scanner feeds are public — but real-time eavesdropping on emergency communications feels different from reading archived transcripts.
+- CCTV feeds are public-facing — but 22,000+ cameras aggregated into one dashboard is a pandemonium of visibility.
+- Telegram channels are public — but geoparsing war feeds and risk-scoring them introduces editorial judgment.
+
+**The "public data" defense mirrors Big Tech's argument:** "We're just connecting publicly available information." But the *synthesis* is the product, and the synthesis changes the ethical calculus.
+
+**Podcast question:** *When does aggregation become surveillance? When does "publicly available" become "publicly dangerous"?*
+
+### 2D. AI Agents and Autonomous Surveillance
+
+**This is the most urgent new concern.**
+
+ShadowBroker's **Agentic AI Command Channel** allows any compatible LLM agent to:
+- Query all 40+ data layers autonomously
+- Run recon toolkits (IP/DNS/WHOIS/sanctions/CVE/MAC/subnet sweeps)
+- Place "intel pins" on the map with confidence scores
+- Fly the operator's map view to any coordinate
+- Generate structured intelligence reports
+- Participate in the InfoNet mesh and Sovereign Shell governance
+
+**The ethical chain:**  
+Human operator → configures AI agent → AI agent autonomously surveys the world → AI agent reports findings → AI agent can take map actions
+
+**Who is responsible when the AI agent surveils the wrong target?** The operator? The developer? The open-source community? No one?
+
+**Podcast question:** *When AI agents can autonomously surveil the globe using open-source tools, who bears moral responsibility for what they find — and what they do with it?*
+
+### 2E. The Privacy Paradox of "Anti-Surveillance" Tools
+
+**Portmaster's SPN reveals a structural paradox:**
+- SPN uses onion encryption (like Tor) — but Safing operates some of the nodes.
+- The company that sells "block mass surveillance" also operates infrastructure that *could* see your traffic.
+- This mirrors the larger tech industry pattern: privacy tools built by companies that need to sustain themselves commercially.
+- **Can a for-profit company be a trusted steward of anti-surveillance infrastructure?**
+
+**The "free" question:**
+- Portmaster is free. ShadowBroker is free. But "free" in what sense?
+- Free as in beer (no cost) — but funded by what? Safing is a company; ShadowBroker is maintained by an individual.
+- Free as in speech (GPL-3.0 / AGPL-3.0) — but what does copyleft *mean* for surveillance technology?
+- If the code is free, anyone can audit it — but does that actually happen?
+- **Podcast question:** *Is "free and open-source" enough to trust privacy tools with your deepest secrets? Or is trust something that can't be achieved through code alone?*
+
+### 2F. Civil Liberties and the Law
+
+**Key legal/regulatory touchpoints:**
+- **GDPR (EU):** Portmaster is developed in the EU (Austria). GDPR's principles of data minimization, purpose limitation, and transparency are architecturally embedded in Portmaster's design. But SPN operates across borders — where does GDPR apply?
+- **AGPL-3.0 (ShadowBroker):** The Affero GPL specifically closes the "SaaS loophole" — if you modify and run the software on a server, you must share your modifications. This is significant for a tool that could be deployed as a surveillance service.
+- **Shodan's terms of service:** ShadowBroker proxies Shodan queries server-side with SSRF guards — but Shodan's own terms restrict how results can be used. Who enforces this?
+- **Telegram's terms:** Scraping public `t.me/s` channels is technically against Telegram's ToS, even if the data is publicly visible.
+- **CIA triad in reverse:** Usually we talk about Confidentiality, Integrity, Availability. Here: *Transparency of the watcher, Accountability of the watched, and the Availability of deniability.*
+
+**Podcast question:** *Do existing legal frameworks (GDPR, CFAA, ToS) even apply when the tool is open-source and self-hosted? Or does borderless surveillance data create borderless legal problems?*
 
 ---
 
-## 6. QUESTIONS TO EXPLORE FURTHER
+## 3. ETHICAL TENSIONS — The Gray Areas
 
-1. **Should privacy tools have a governance body?** Portmaster is a commercial company's product. Should critical civil-liberties infrastructure be governed democratically?
-2. **Is the SPN's centralization a betrayal of its mission?** Or is it a pragmatic compromise?
-3. **How do block lists handle politicalspeech?** What happens when a domain used by dissidents is flagged as "tracking"?
-4. **What does Portmaster's EU origin mean for its global audience?** Does being developed under GDPR give it a different philosophical orientation?
-5. **Can open-source counter-surveillance scale to protect non-technical users?** Or does it remain a specialist's tool?
-6. **Is there a tension between Portmaster's auto-blocking and the ethos of user autonomy?** The tool claims to give you control, but it also makes decisions for you by default.
-
----
-
-## 7. RELATED PROJECTS FOR CROSS-REFERENCE
-
-| Project | Stars | Focus | Relevance |
-|---------|-------|-------|-----------|
-| [safing/portmaster](https://github.com/safing/portmaster) | 13,737 | Network firewall / surveillance blocking | Primary subject |
-| [privacyguides/privacyguides.org](https://github.com/privacyguides/privacyguides.org) | 4,256 | Privacy tool curation & education | Ethical framework for evaluating tools |
-| [Shawn-Shan/fawkes](https://github.com/Shawn-Shan/fawkes) | 5,607 | Facial recognition counter-surveillance | Direct AI-era counter-surveillance |
-| [berty/berty](https://github.com/berty/berty) | 9,300 | Peer-to-peer encrypted messaging | Decentralized communication under surveillance |
-| [tehrengr/性格](https://github.com/tevora-threat/Scout) | 384 | Surveillance detection | Complementary to Portmaster's approach |
+| Tension | Portmaster | ShadowBroker |
+|---------|-----------|--------------|
+| **Protection vs. Visibility** | Blocks outbound surveillance | Enables outbound visibility |
+| **Centralization vs. Decentralization** | SPN nodes operated by Safing (centralized) | InfoNet mesh (decentralized but experimental) |
+| **Open-source vs. Trust** | Code is auditable; who audits? | Code is auditable; 1,788 forks — who's auditing those? |
+| **Individual vs. State** | Empowers the individual | Empowers the individual — but to see what states do |
+| **Transparency vs. Security** | "See all your connections" — transparency as security | "See all the world's connections" — transparency as intelligence |
+| **Free as in speech vs. Free as in beer** | GPL-3.0 code; commercial SPN offering | AGPL-3.0 code; no commercial offering yet |
+| **Anonymity vs. Accountability** | Hides your traffic from ISPs | Reveals others' traffic to you |
+| **The Lock Paradox** | The tool that protects you has kernel access to everything | The tool that reveals everything has AI agents that can act autonomously |
 
 ---
 
-*Research compiled for podcast episode on digital rights and surveillance technology. Forked from safing/portmaster for annotation.*
+## 4. PODCAST STORY ANGLES & NARRATIVE HOOKS
+
+### Angle 1: "The Arms Race of Visibility"
+Frame the episode as a cold war of surveillance: Portmaster builds walls; ShadowBroker builds windows. The question isn't "which side is right" — it's whether a world where everyone can see everyone is more just or more dangerous.
+
+### Angle 2: "The Locksmith's Dilemma"
+Portmaster needs kernel-level access to protect you. That same access could be used to surveil you. Safing says it doesn't — but how would you *know*? This is the locksmith paradox: can you trust the person who made the lock?
+
+### Angle 3: "When AI Becomes the Watcher"
+ShadowBroker's AI agents can autonomously surveil the globe. This isn't science fiction — it's a Docker container away from anyone. What happens when the first AI agent surveils the wrong person, or the wrong country? Who answers for it?
+
+### Angle 4: "Public Data, Private Harm"
+ShadowBroker's disclaimer — "the data is already public" — is technically true but morally incomplete. When you aggregate 22,000 CCTV feeds, track every private jet, and wire AI agents to recon the internet, "public data" becomes a panopticon. Is transparency always a good?
+
+### Angle 5: "The Company That Fights Surveillance"
+Safing is a *company* selling anti-surveillance software. Its SPN network runs through company-operated nodes. This is the innovation paradox: to fund anti-surveillance tools, you need revenue; to get revenue, you need infrastructure; that infrastructure can see everything. Can capitalism build genuine privacy?
+
+### Angle 6: "The Listener's Choice"
+End the episode with a direct challenge: Every listener can install Portmaster today (free) or spin up ShadowBroker (free). Both are open-source. Both are powerful. The question isn't "can you access these tools?" — it's "what do you do with them, and who do you become while using them?"
+
+---
+
+## 5. KEY QUOTES & REFERENCES
+
+### From Portmaster's README
+> *"Restore privacy and take back control over all your computer's network activity."*
+
+> *"Everything is 100% local on your device. (except the SPN, naturally)"*
+
+> *"Love Freedom — ❌ Block Mass Surveillance"*
+
+### From ShadowBroker's README
+> *"The project does not introduce new surveillance capabilities — it aggregates and visualizes existing public datasets."*
+
+> *"Do not transmit anything sensitive on any channel. Treat all lanes as open and public for now."*
+
+> *"The knowledge is available to all but rarely aggregated in the open, until now."*
+
+> *"ShadowBroker has no accounts, product telemetry, or analytics."*
+
+### Ethical Hex Points
+- **The Panopticon Turn**: When everyone has the power to watch, the watch becomes mutual — and mutual watch is not the same as mutual trust.
+- **The Aggregation Fallacy**: "It's just public data" confuses *individual* publicness with *synthesized* visibility. A mosaic of public dots is not "public" — it's *constructed*.
+- **The Trust Default**: Open-source code is trust-minimized, not trust-eliminated. You still have to trust that (a) the code you're running matches the code on GitHub, (b) the maintainers haven't been co-opted, and (c) the infrastructure operators aren't adversaries.
+- **The Asymmetry Insomnia**: If you can see everyone, everyone can see you. The question is whether that's a feature or a bug.
+
+---
+
+## 6. OPEN QUESTIONS FOR THE EPISODE
+
+1. **Could Portmaster's SPN nodes be compelled by Austrian/EU law to log traffic?** What legal frameworks apply?
+2. **Has anyone audited Portmaster's kernel driver for backdoors?** How does community review work for low-level systems code?
+3. **What's the stopping condition for ShadowBroker?** If you can monitor everything, when do you stop monitoring?
+4. **Can ShadowBroker's "Sovereign Shell" governance actually work?** Who votes? Who verifies? Who's excluded?
+5. **What happens when an AI agent makes a surveillance error?** Is there a kill switch? Accountability? Redress?
+6. **Is AGPL-3.0 the right license for surveillance technology?** Does copyleft create a "viral" privacy obligation — or just a viral surveillance tool?
+7. **What does "privacy" mean when the tool itself becomes the surveillance target?** If Portmaster is blocked in a country, does that make it more or less trustworthy?
+
+---
+
+## 7. SOURCES & FURTHER READING
+
+| Source | Link |
+|--------|------|
+| Portmaster repo | https://github.com/safing/portmaster |
+| Portmaster fork (this repo) | https://github.com/bro26man-hash/portmaster |
+| Portmaster website | https://safing.io |
+| Portmaster wiki | https://wiki.safing.io |
+| SPN whitepaper | https://safing.io/files/whitepaper/Gate17.pdf |
+| ShadowBroker repo | https://github.com/BigBodyCobain/Shadowbroker |
+| ShadowBroker threat model | docs/mesh/threat-model.md (in ShadowBroker repo) |
+| ShadowBroker claims reconciliation | docs/mesh/claims-reconciliation.md (in ShadowBroker repo) |
+| Privacy Guides (companion project) | https://github.com/privacyguides/privacyguides.org |
+| Privacy Tools (companion project) | https://github.com/privacytools/privacytools.io |
+| Google Differential Privacy | https://github.com/google/differential-privacy |
+
+---
+
+*Notes compiled from GitHub open-source research. Forked from safing/portmaster on 2026-09-17. All stars/forks/issue counts reflect the state at time of research.*
